@@ -11,6 +11,7 @@ import {
   Plane,
   Trophy,
   Music,
+  Film,
   Headphones,
   Mountain,
   Camera,
@@ -26,7 +27,7 @@ export default function HomePage() {
   const [currentSection, setCurrentSection] = useState("top");
 
   useEffect(() => {
-    const sectionIds = ["top", "about", "hobbies", "now", "contact"];
+    const sectionIds = ["top", "about", "hobbies", "now", "projects", "contact"];
 
     const onScroll = () => {
       const probe = window.scrollY + window.innerHeight * 0.33;
@@ -56,10 +57,10 @@ export default function HomePage() {
   }, []);
 
   const hobbyCards = [
-    { title: "Tennis", desc: "Weekend leagues, rally sessions, and the occasional tie-break thrill.", icon: Trophy, gradient: "from-emerald-100 to-green-100", iconColor: "text-emerald-700" },
+    { title: "Tennis", desc: "Weekend leagues, long rallies, and good company.", icon: Trophy, gradient: "from-emerald-100 to-green-100", iconColor: "text-emerald-700" },
     { title: "Music", desc: "Concerts, guitars, and discovering new artists on repeat.", icon: Music, gradient: "from-blue-100 to-indigo-100", iconColor: "text-blue-700" },
-    { title: "Listening", desc: "Always queueing up fresh tracks & playlists.", icon: Headphones, gradient: "from-purple-100 to-pink-100", iconColor: "text-purple-700" },
-    { title: "Outdoors", desc: "Hikes, green spaces, and sunrise coffee outside.", icon: Mountain, gradient: "from-green-100 to-teal-100", iconColor: "text-green-700" },
+    { title: "Movies", desc: "Keeping a running list of films to watch (my letterboxd is suffering)", icon: Film, gradient: "from-purple-100 to-pink-100", iconColor: "text-purple-700" },
+    { title: "Outdoors", desc: "Hikes, green spaces, and good coffee outside.", icon: Mountain, gradient: "from-green-100 to-teal-100", iconColor: "text-green-700" },
     { title: "Travel", desc: "Collecting moments, not magnets. Always down for a new city.", icon: Plane, gradient: "from-teal-100 to-cyan-100", iconColor: "text-teal-700" },
     { title: "Capturing", desc: "Snapping little vignettes of life & friends.", icon: Camera, gradient: "from-pink-100 to-rose-100", iconColor: "text-pink-700" },
   ];
@@ -83,40 +84,42 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
         </div>
 
-        {/* Navigation */}
-        <nav className="mx-auto mb-8 mt-4 flex w-fit items-center gap-1 rounded-2xl border border-white/60 bg-white/70 px-2 py-1 shadow-lg backdrop-blur-xl">
-          <a
-            href="#top"
-            className={`mr-2 rounded-xl px-3 py-1 text-sm font-semibold hover:shadow ${currentSection === "top" ? "bg-emerald-100 text-slate-900" : "text-slate-700"}`}
-            aria-current={currentSection === "top" ? "true" : undefined}
-          >
-            <span className="inline-flex items-center gap-1">
-              <Sparkles className="h-4 w-4" /> Michael
-            </span>
-          </a>
-          {[
-            { href: "#about", label: "About" },
-            { href: "#hobbies", label: "Hobbies" },
-            { href: "#now", label: "Now" },
-            { href: "#contact", label: "Contact" },
-          ].map((n) => {
-            const id = n.href.slice(1);
-            const active = currentSection === id;
-            return (
-              <a
-                key={n.href}
-                href={n.href}
-                className={`relative rounded-xl px-3 py-1 text-sm transition hover:bg-white hover:shadow ${active ? "bg-emerald-100 text-slate-900" : "text-slate-700"}`}
-                aria-current={active ? "true" : undefined}
-              >
-                {n.label}
-                <span
-                  className={`absolute left-2 right-2 -bottom-[2px] h-0.5 rounded-full bg-emerald-400 transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
-                />
-              </a>
-            );
-          })}
-        </nav>
+       {/* Navigation */}
+<nav className="mx-auto mb-8 mt-4 flex flex-wrap justify-center items-center gap-1 rounded-2xl border border-white/60 bg-white/70 px-2 py-1 shadow-lg backdrop-blur-xl max-w-full">
+  <a
+    href="#top"
+    className={`mr-2 rounded-xl px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold hover:shadow ${currentSection === "top" ? "bg-emerald-100 text-slate-900" : "text-slate-700"}`}
+    aria-current={currentSection === "top" ? "true" : undefined}
+  >
+    <span className="inline-flex items-center gap-1">
+      <Sparkles className="h-4 w-4" /> Michael
+    </span>
+  </a>
+  {[
+    { href: "#about", label: "About" },
+    { href: "#hobbies", label: "Hobbies" },
+    { href: "#now", label: "Now" },
+    { href: "#projects", label: "Projects" },
+    { href: "#contact", label: "Contact" },
+  ].map((n) => {
+    const id = n.href.slice(1);
+    const active = currentSection === id;
+    return (
+      <a
+        key={n.href}
+        href={n.href}
+        className={`relative rounded-xl px-2 sm:px-3 py-1 text-xs sm:text-sm transition hover:bg-white hover:shadow ${active ? "bg-emerald-100 text-slate-900" : "text-slate-700"}`}
+        aria-current={active ? "true" : undefined}
+      >
+        {n.label}
+        <span
+          className={`absolute left-2 right-2 -bottom-[2px] h-0.5 rounded-full bg-emerald-400 transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
+        />
+      </a>
+    );
+  })}
+</nav>
+
 
         {/* Hero */}
         <header id="top" className="mx-auto max-w-5xl px-6 pb-16 pt-2">
@@ -127,11 +130,34 @@ export default function HomePage() {
                 Atlanta, GA
               </div>
 
-              <h1 className="mt-5 text-4xl font-extrabold tracking-tight md:text-6xl">
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-blue-500" style={{ WebkitTextFillColor: "transparent" }}>
-                  <Typewriter words={["Hi, I'm Michael — Software Engineer"]} loop={1} cursor cursorStyle="|" typeSpeed={50} deleteSpeed={0} delaySpeed={999999} />
-                </span>
-              </h1>
+         <h1 className="mt-5 text-4xl font-extrabold tracking-tight md:text-6xl">
+  <span
+    className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-blue-500"
+    style={{
+      WebkitTextFillColor: "transparent",
+      display: "inline-block",
+      minHeight: "1.7em", // 👈 fixes cut-off
+      lineHeight: "1.2"   // 👈 keeps good spacing
+    }}
+  >
+    Hi, I'm Michael —{" "}
+    <Typewriter
+      words={[
+        "Software Engineer",
+        "Problem Solver",
+        "Coffee Destroyer",
+      ]}
+      loop={true}
+      cursor
+      cursorStyle="|"
+      typeSpeed={60}
+      deleteSpeed={30}
+      delaySpeed={2500}
+    />
+  </span>
+</h1>
+
+
 
               <p className="mt-4 max-w-xl text-lg text-slate-600 leading-relaxed">
                 I design & build clean, thoughtful software. When I'm not developing, you'll probably find me on a tennis court, at a concert, or planning my next outdoor escape.
@@ -158,13 +184,23 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-12">
             <Card className="md:col-span-7">
               <h3 className="text-xl font-semibold">A quick snapshot</h3>
-              <p className="mt-3 text-slate-600">I'm a University of Georgia grad (Computer Science) now crafting user-focused, maintainable apps. I love shipping features that feel effortless and elegant.</p>
+              <p className="mt-3 text-slate-600">
+                I’m a University of Georgia Computer Science grad, now working as a software engineer in Atlanta. I like building software that’s reliable, easy to use, and just works the way it should.              </p>
               <ul className="mt-4 space-y-3 text-slate-600">
-                <li className="flex items-center gap-3"><div className="h-2 w-2 rounded-full bg-emerald-400" />Clean architecture, DX, and performance-minded code</li>
-                <li className="flex items-center gap-3"><div className="h-2 w-2 rounded-full bg-teal-400" />Pragmatic problem-solver, teammate, and lifelong learner</li>
-                <li className="flex items-center gap-3"><div className="h-2 w-2 rounded-full bg-blue-400" />Atlanta-based, open to meeting new people & trying new things</li>
+                <li className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-400" />
+                  Clean architecture, DX, and performance-minded code                </li>
+                <li className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-teal-400" />
+                  Practical problem-solver and collaborative teammate
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-blue-400" />
+                  Based in Atlanta, always open to new people and new experiences
+                </li>
               </ul>
             </Card>
+
             <Card className="md:col-span-5">
               <h3 className="text-xl font-semibold">Stack favorites</h3>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -204,15 +240,54 @@ export default function HomePage() {
           <SectionTitle kicker="/now" title="What I'm up to" />
           <Card>
             <ul className="space-y-5">
-              <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-emerald-400 to-green-400 mt-1 flex-shrink-0" /><div><strong className="text-emerald-700 mr-2">Building:</strong><span className="text-slate-600">polishing personal tools & components in Next.js + Tailwind.</span></div></li>
+              <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-emerald-400 to-green-400 mt-1 flex-shrink-0" /><div><strong className="text-emerald-700 mr-2">Building:</strong><span className="text-slate-600">established saas applications at work and fun projects at home</span></div></li>
               <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-teal-400 to-blue-400 mt-1 flex-shrink-0" /><div><strong className="text-teal-700 mr-2">Learning:</strong><span className="text-slate-600">exploring deeper systems topics and performance tuning.</span></div></li>
-              <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 mt-1 flex-shrink-0" /><div><strong className="text-blue-700 mr-2">Life:</strong><span className="text-slate-600">weekly tennis, shows when good bands roll through, and mini day-trips out of ATL.</span></div></li>
+              <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 mt-1 flex-shrink-0" /><div><strong className="text-blue-700 mr-2">Life:</strong><span className="text-slate-600">weekly tennis, shows when good bands roll through, and mini trips out of ATL.</span></div></li>
             </ul>
           </Card>
 
           <h3 className="mt-8 mb-3 text-lg font-semibold text-slate-800">Tracks I’ve been enjoying</h3>
           <RecentTracks />
         </section>
+
+       {/* Projects Section */}
+<section id="projects" className="mx-auto max-w-5xl px-6 py-10">
+  <SectionTitle kicker="Projects" title="Fun Projects" />
+
+  <div className="grid gap-6 sm:grid-cols-2">
+    {[
+      {
+        title: "Barkada Hospitality",
+        desc: "A full-stack reservation and payment platform built with Next.js, TailwindCSS, and Firebase for a sushi omakase experience. Supports dynamic seat availability, two daily seating schedules, and real-time booking updates. Integrated Square for secure $50 deposits with the remaining balance paid in person. Designed with a clean, mobile-friendly UI to make booking fast and effortless for customers.",
+        img: "/images/Screenshot_2.png"
+      },
+      {
+        title: "Macro Buddy",
+        desc: "A full-stack nutrition tracking web app built with the MERN stack (MongoDB, Express.js, React, Node.js). Features secure JWT authentication, personalized meal diaries, and real-time macronutrient tracking. Designed with a responsive UI for easy meal logging and a smooth user experience.",
+        img: "/images/Screenshot_3.png"
+      }
+    ].map((proj) => (
+      <Card key={proj.title} className="flex flex-col h-full overflow-hidden">
+        {/* Project Image */}
+        <div className="aspect-video w-full overflow-hidden rounded-lg">
+          <img
+            src={proj.img}
+            alt={proj.title}
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+          />
+        </div>
+
+        {/* Project Content */}
+        <div className="mt-4 flex flex-col flex-1">
+          <h3 className="text-lg font-semibold">{proj.title}</h3>
+          <p className="mt-2 text-slate-600 flex-1">{proj.desc}</p>
+        </div>
+      </Card>
+    ))}
+  </div>
+</section>
+
+
 
         {/* Contact Section */}
         <section id="contact" className="mx-auto max-w-5xl px-6 py-12">
