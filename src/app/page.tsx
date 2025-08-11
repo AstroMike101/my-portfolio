@@ -317,7 +317,6 @@ export default function HomePage() {
           </Card>
           <div className="mt-8 text-center">
             <div className="inline-flex items-center gap-2 text-sm text-slate-500">
-              <Sparkles className="h-4 w-4" />
               © {new Date().getFullYear()} Michael Chen — built with Next.js & Tailwind
             </div>
           </div>
