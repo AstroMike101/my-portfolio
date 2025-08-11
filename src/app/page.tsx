@@ -84,42 +84,41 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
         </div>
 
-       {/* Navigation */}
-<nav className="mx-auto mb-8 mt-4 flex flex-wrap justify-center items-center gap-1 rounded-2xl border border-white/60 bg-white/70 px-2 py-1 shadow-lg backdrop-blur-xl max-w-full">
-  <a
-    href="#top"
-    className={`mr-2 rounded-xl px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold hover:shadow ${currentSection === "top" ? "bg-emerald-100 text-slate-900" : "text-slate-700"}`}
-    aria-current={currentSection === "top" ? "true" : undefined}
-  >
-    <span className="inline-flex items-center gap-1">
-      <Sparkles className="h-4 w-4" /> Michael
-    </span>
-  </a>
-  {[
-    { href: "#about", label: "About" },
-    { href: "#hobbies", label: "Hobbies" },
-    { href: "#now", label: "Now" },
-    { href: "#projects", label: "Projects" },
-    { href: "#contact", label: "Contact" },
-  ].map((n) => {
-    const id = n.href.slice(1);
-    const active = currentSection === id;
-    return (
-      <a
-        key={n.href}
-        href={n.href}
-        className={`relative rounded-xl px-2 sm:px-3 py-1 text-xs sm:text-sm transition hover:bg-white hover:shadow ${active ? "bg-emerald-100 text-slate-900" : "text-slate-700"}`}
-        aria-current={active ? "true" : undefined}
-      >
-        {n.label}
-        <span
-          className={`absolute left-2 right-2 -bottom-[2px] h-0.5 rounded-full bg-emerald-400 transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
-        />
-      </a>
-    );
-  })}
-</nav>
-
+        {/* Navigation */}
+        <nav className="mx-auto mb-8 mt-4 flex flex-wrap justify-center items-center gap-1 rounded-2xl border border-white/60 bg-white/70 px-2 py-1 shadow-lg backdrop-blur-xl max-w-full">
+          <a
+            href="#top"
+            className={`mr-2 rounded-xl px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold hover:shadow ${currentSection === "top" ? "bg-emerald-100 text-slate-900" : "text-slate-700"}`}
+            aria-current={currentSection === "top" ? "true" : undefined}
+          >
+            <span className="inline-flex items-center gap-1">
+              <Sparkles className="h-4 w-4" /> Michael
+            </span>
+          </a>
+          {[
+            { href: "#about", label: "About" },
+            { href: "#hobbies", label: "Hobbies" },
+            { href: "#now", label: "Now" },
+            { href: "#projects", label: "Projects" },
+            { href: "#contact", label: "Contact" },
+          ].map((n) => {
+            const id = n.href.slice(1);
+            const active = currentSection === id;
+            return (
+              <a
+                key={n.href}
+                href={n.href}
+                className={`relative rounded-xl px-2 sm:px-3 py-1 text-xs sm:text-sm transition hover:bg-white hover:shadow ${active ? "bg-emerald-100 text-slate-900" : "text-slate-700"}`}
+                aria-current={active ? "true" : undefined}
+              >
+                {n.label}
+                <span
+                  className={`absolute left-2 right-2 -bottom-[2px] h-0.5 rounded-full bg-emerald-400 transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
+                />
+              </a>
+            );
+          })}
+        </nav>
 
         {/* Hero */}
         <header id="top" className="mx-auto max-w-5xl px-6 pb-16 pt-2">
@@ -130,37 +129,35 @@ export default function HomePage() {
                 Atlanta, GA
               </div>
 
-         <h1 className="mt-5 text-4xl font-extrabold tracking-tight md:text-6xl">
-  <span
-    className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-blue-500"
-    style={{
-      WebkitTextFillColor: "transparent",
-      display: "inline-block",
-      minHeight: "1.7em", // 👈 fixes cut-off
-      lineHeight: "1.2"   // 👈 keeps good spacing
-    }}
-  >
-    Hi, I'm Michael —{" "}
-    <Typewriter
-      words={[
-        "Software Engineer",
-        "Problem Solver",
-        "Coffee Destroyer",
-      ]}
-      loop={true}
-      cursor
-      cursorStyle="|"
-      typeSpeed={60}
-      deleteSpeed={30}
-      delaySpeed={2500}
-    />
-  </span>
-</h1>
-
-
+              <h1 className="mt-5 text-4xl font-extrabold tracking-tight md:text-6xl">
+                <span
+                  className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-blue-500"
+                  style={{
+                    WebkitTextFillColor: "transparent",
+                    display: "inline-block",
+                    minHeight: "1.7em",
+                    lineHeight: "1.2"
+                  }}
+                >
+                  Hi, I&apos;m Michael —{" "}
+                  <Typewriter
+                    words={[
+                      "Software Engineer",
+                      "Problem Solver",
+                      "Coffee Destroyer",
+                    ]}
+                    loop={true}
+                    cursor
+                    cursorStyle="|"
+                    typeSpeed={60}
+                    deleteSpeed={30}
+                    delaySpeed={2500}
+                  />
+                </span>
+              </h1>
 
               <p className="mt-4 max-w-xl text-lg text-slate-600 leading-relaxed">
-                I design & build clean, thoughtful software. When I'm not developing, you'll probably find me on a tennis court, at a concert, or planning my next outdoor escape.
+                I design &amp; build clean, thoughtful software. When I&apos;m not developing, you&apos;ll probably find me on a tennis court, at a concert, or planning my next outdoor escape.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -250,42 +247,42 @@ export default function HomePage() {
           <RecentTracks />
         </section>
 
-       {/* Projects Section */}
-<section id="projects" className="mx-auto max-w-5xl px-6 py-10">
-  <SectionTitle kicker="Projects" title="Fun Projects" />
+        {/* Projects Section */}
+        <section id="projects" className="mx-auto max-w-5xl px-6 py-10">
+          <SectionTitle kicker="Projects" title="Fun Projects" />
 
-  <div className="grid gap-6 sm:grid-cols-2">
-    {[
-      {
-        title: "Barkada Hospitality",
-        desc: "A full-stack reservation and payment platform built with Next.js, TailwindCSS, and Firebase for a sushi omakase experience. Supports dynamic seat availability, two daily seating schedules, and real-time booking updates. Integrated Square for secure $50 deposits with the remaining balance paid in person. Designed with a clean, mobile-friendly UI to make booking fast and effortless for customers.",
-        img: "/images/Screenshot_2.png"
-      },
-      {
-        title: "Macro Buddy",
-        desc: "A full-stack nutrition tracking web app built with the MERN stack (MongoDB, Express.js, React, Node.js). Features secure JWT authentication, personalized meal diaries, and real-time macronutrient tracking. Designed with a responsive UI for easy meal logging and a smooth user experience.",
-        img: "/images/Screenshot_3.png"
-      }
-    ].map((proj) => (
-      <Card key={proj.title} className="flex flex-col h-full overflow-hidden">
-        {/* Project Image */}
-        <div className="aspect-video w-full overflow-hidden rounded-lg">
-          <img
-            src={proj.img}
-            alt={proj.title}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-          />
-        </div>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {[
+              {
+                title: "Barkada Hospitality",
+                desc: "A full-stack reservation and payment platform built with Next.js, TailwindCSS, and Firebase for a sushi omakase experience. Supports dynamic seat availability, two daily seating schedules, and real-time booking updates. Integrated Square for secure $50 deposits with the remaining balance paid in person. Designed with a clean, mobile-friendly UI to make booking fast and effortless for customers.",
+                img: "/images/Screenshot_2.png"
+              },
+              {
+                title: "Macro Buddy",
+                desc: "A full-stack nutrition tracking web app built with the MERN stack (MongoDB, Express.js, React, Node.js). Features secure JWT authentication, personalized meal diaries, and real-time macronutrient tracking. Designed with a responsive UI for easy meal logging and a smooth user experience.",
+                img: "/images/Screenshot_3.png"
+              }
+            ].map((proj) => (
+              <Card key={proj.title} className="flex flex-col h-full overflow-hidden">
+                {/* Project Image */}
+                <div className="aspect-video w-full overflow-hidden rounded-lg">
+                  <img
+                    src={proj.img}
+                    alt={proj.title}
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
 
-        {/* Project Content */}
-        <div className="mt-4 flex flex-col flex-1">
-          <h3 className="text-lg font-semibold">{proj.title}</h3>
-          <p className="mt-2 text-slate-600 flex-1">{proj.desc}</p>
-        </div>
-      </Card>
-    ))}
-  </div>
-</section>
+                {/* Project Content */}
+                <div className="mt-4 flex flex-col flex-1">
+                  <h3 className="text-lg font-semibold">{proj.title}</h3>
+                  <p className="mt-2 text-slate-600 flex-1">{proj.desc}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
 
 
 
