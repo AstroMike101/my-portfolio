@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Typewriter } from 'react-simple-typewriter';
 
+
 import {
   Linkedin,
   Mail,
@@ -130,31 +131,43 @@ export default function HomePage() {
               </div>
 
               <h1 className="mt-5 text-4xl font-extrabold tracking-tight md:text-6xl">
+                {/* Static line with gradient */}
                 <span
                   className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-blue-500"
-                  style={{
-                    WebkitTextFillColor: "transparent",
-                    display: "inline-block",
-                    minHeight: "1.7em",
-                    lineHeight: "1.2"
-                  }}
+                  style={{ WebkitTextFillColor: "transparent", lineHeight: "1.2" }}
                 >
-                  Hi, I&apos;m Michael —{" "}
-                  <Typewriter
-                    words={[
-                      "Software Engineer",
-                      "Problem Solver",
-                      "Coffee Destroyer",
-                    ]}
-                    loop={true}
-                    cursor
-                    cursorStyle="|"
-                    typeSpeed={60}
-                    deleteSpeed={30}
-                    delaySpeed={2500}
-                  />
+                  Hi, I&apos;m Michael —
+                </span>
+
+                {/* Animated line: spacer + overlay */}
+                <span className="relative inline-block align-top">
+                  {/* Spacer reserves width/height of the longest phrase */}
+                  <span
+                    aria-hidden="true"
+                    className="invisible block whitespace-nowrap text-3xl md:text-6xl"
+                    style={{ lineHeight: "1.2" }}
+                  >
+                    Software Engineer
+                  </span>
+
+                  {/* Actual animated text with its OWN gradient */}
+                  <span
+                    className="absolute inset-0 block whitespace-nowrap text-3xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-blue-500"
+                    style={{ WebkitTextFillColor: "transparent", lineHeight: "1.2" }}
+                  >
+                    <Typewriter
+                      words={["Software Engineer", "Problem Solver", "Coffee Destroyer"]}
+                      loop
+                      cursor
+                      cursorStyle="|"
+                      typeSpeed={90}
+                      deleteSpeed={90}
+                      delaySpeed={1500}
+                    />
+                  </span>
                 </span>
               </h1>
+
 
               <p className="mt-4 max-w-xl text-lg text-slate-600 leading-relaxed">
                 I design &amp; build clean, thoughtful software. When I&apos;m not developing, you&apos;ll probably find me on a tennis court, at a concert, or planning my next outdoor escape.
@@ -234,12 +247,12 @@ export default function HomePage() {
 
         {/* Now Section */}
         <section id="now" className="mx-auto max-w-5xl px-6 py-10">
-          <SectionTitle kicker="/now" title="What I'm up to" />
+          <SectionTitle kicker="now" title="What I'm up to" />
           <Card>
             <ul className="space-y-5">
               <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-emerald-400 to-green-400 mt-1 flex-shrink-0" /><div><strong className="text-emerald-700 mr-2">Building:</strong><span className="text-slate-600">established saas applications at work and fun projects at home</span></div></li>
-              <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-teal-400 to-blue-400 mt-1 flex-shrink-0" /><div><strong className="text-teal-700 mr-2">Learning:</strong><span className="text-slate-600">exploring deeper systems topics and performance tuning.</span></div></li>
-              <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 mt-1 flex-shrink-0" /><div><strong className="text-blue-700 mr-2">Life:</strong><span className="text-slate-600">weekly tennis, shows when good bands roll through, and mini trips out of ATL.</span></div></li>
+              <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-teal-400 to-blue-400 mt-1 flex-shrink-0" /><div><strong className="text-teal-700 mr-2">Learning:</strong><span className="text-slate-600">exploring deeper systems topics and performance tuning</span></div></li>
+              <li className="flex items-start gap-4"><div className="h-3 w-3 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 mt-1 flex-shrink-0" /><div><strong className="text-blue-700 mr-2">Life:</strong><span className="text-slate-600">weekly tennis, shows when good bands roll through, and mini trips out of ATL</span></div></li>
             </ul>
           </Card>
 
@@ -255,7 +268,7 @@ export default function HomePage() {
             {[
               {
                 title: "Barkada Hospitality",
-                desc: "A full-stack reservation and payment platform built with Next.js, TailwindCSS, and Firebase for a sushi omakase experience. Supports dynamic seat availability, two daily seating schedules, and real-time booking updates. Integrated Square for secure $50 deposits with the remaining balance paid in person. Designed with a clean, mobile-friendly UI to make booking fast and effortless for customers.",
+                desc: "A full-stack reservation and payment platform built with Next.js, TailwindCSS, and Firebase for a ATL based sushi omakase experience. Supports dynamic seat availability, two daily seating schedules, and real-time booking updates. Integrated Square for secure $50 deposits with the remaining balance paid in person. Designed with a clean, mobile-friendly UI to make booking fast and effortless for customers.",
                 img: "/images/Screenshot_2.png"
               },
               {
