@@ -62,7 +62,7 @@ export default function HomePage() {
     { title: "Music", desc: "Concerts, guitars, and discovering new artists on repeat.", icon: Music, gradient: "from-blue-100 to-indigo-100", iconColor: "text-blue-700" },
     { title: "Movies", desc: "Keeping a running list of films to watch (my letterboxd is suffering)", icon: Film, gradient: "from-purple-100 to-pink-100", iconColor: "text-purple-700" },
     { title: "Outdoors", desc: "Hikes, green spaces, and good coffee outside.", icon: Mountain, gradient: "from-green-100 to-teal-100", iconColor: "text-green-700" },
-    { title: "Travel", desc: "Collecting moments, not magnets. Always down for a new city.", icon: Plane, gradient: "from-teal-100 to-cyan-100", iconColor: "text-teal-700" },
+    { title: "Travel", desc: "Collecting moments, not magnets. Always down for a new city or country.", icon: Plane, gradient: "from-teal-100 to-cyan-100", iconColor: "text-teal-700" },
     { title: "Capturing", desc: "Snapping little vignettes of life & friends.", icon: Camera, gradient: "from-pink-100 to-rose-100", iconColor: "text-pink-700" },
   ];
 
