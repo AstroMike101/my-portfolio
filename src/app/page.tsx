@@ -195,7 +195,7 @@ export default function HomePage() {
             <Card className="md:col-span-7">
               <h3 className="text-xl font-semibold">A quick snapshot</h3>
               <p className="mt-3 text-slate-600">
-                I’m a University of Georgia Computer Science grad, now working as a software engineer in Atlanta. I like building software that’s reliable, easy to use, and just works the way it should.              </p>
+               I graduated from the University of Georgia in 2024 with a degree in Computer Science, and now work as a software engineer in Atlanta. I’m passionate about building software that’s reliable, intuitive, and works exactly as it should.          </p>
               <ul className="mt-4 space-y-3 text-slate-600">
                 <li className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-emerald-400" />
