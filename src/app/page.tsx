@@ -22,6 +22,8 @@ import {
 import Card from "@/components/Card";
 import SectionTitle from "@/components/SectionTitle";
 import RecentTracks from "@/components/RecentTracks";
+import PlacesSection from "@/components/PlacesSection";
+
 
 export default function HomePage() {
   const [emailShown, setEmailShown] = useState(false);
@@ -156,7 +158,7 @@ export default function HomePage() {
                     style={{ WebkitTextFillColor: "transparent", lineHeight: "1.2" }}
                   >
                     <Typewriter
-                      words={["Software Engineer", "Problem Solver", "Coffee Destroyer"]}
+                      words={["Software Engineer", "Problem Solver", "Lifelong Learner"]}
                       loop
                       cursor
                       cursorStyle="|"
@@ -195,7 +197,7 @@ export default function HomePage() {
             <Card className="md:col-span-7">
               <h3 className="text-xl font-semibold">A quick snapshot</h3>
               <p className="mt-3 text-slate-600">
-               I graduated from the University of Georgia in 2024 with a degree in Computer Science, and now work as a software engineer in Atlanta. I’m passionate about building software that’s reliable, intuitive, and works exactly as it should.          </p>
+                I graduated from the University of Georgia in 2024 with a degree in Computer Science, and now work as a software engineer in Atlanta. I’m passionate about building software that’s reliable, intuitive, and works exactly as it should.          </p>
               <ul className="mt-4 space-y-3 text-slate-600">
                 <li className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-emerald-400" />
@@ -296,7 +298,11 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+        <section id='PlacesSection'>
+          <PlacesSection />
 
+
+        </section>
 
 
         {/* Contact Section */}
