@@ -169,7 +169,7 @@ export default function PlacesSection() {
                 exit={{ opacity: 0 }}
               >
                 <Card className="flex items-center justify-center h-full text-slate-500 text-lg">
-                  <p>Click a glowing pin on the globe to see details ✨</p>
+                  <p>Click a glowing pin on the globe to see details! ✨</p>
                 </Card>
               </motion.div>
             )}
