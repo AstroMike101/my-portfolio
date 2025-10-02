@@ -305,28 +305,52 @@ export default function HomePage() {
         </section>
 
 
-        {/* Contact Section */}
-        <section id="contact" className="mx-auto max-w-5xl px-6 py-12">
-          <SectionTitle kicker="Contact" title="Let's connect" />
-          <Card>
-            <div className="flex flex-wrap items-center gap-4">
-              <a className="inline-flex items-center gap-2 rounded-xl border border-slate-200 glass px-4 py-3 hover:shadow-lg transition-all" href="https://www.linkedin.com/in/michael-chen880/" target="_blank" rel="noreferrer">
-                <Linkedin className="h-5 w-5 text-blue-600" />
-                LinkedIn
-                <ExternalLink className="h-3 w-3 opacity-60" />
-              </a>
-              <button onClick={() => setEmailShown((v) => !v)} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-white shadow-lg hover:shadow-xl transition-all">
-                <Mail className="h-5 w-5" />
-                <span>{emailShown ? "michaelchendevs@gmail.com" : "Show email"}</span>
-              </button>
-            </div>
-          </Card>
-          <div className="mt-8 text-center">
-            <div className="inline-flex items-center gap-2 text-sm text-slate-500">
-              © {new Date().getFullYear()} Michael Chen — built with Next.js & Tailwind
-            </div>
-          </div>
-        </section>
+{/* Contact Section */}
+<section id="contact" className="mx-auto max-w-5xl px-6 py-12">
+  <SectionTitle kicker="Contact" title="Let's connect" />
+  <Card>
+    <div className="flex flex-wrap items-center gap-4">
+      {/* LinkedIn */}
+      <a
+        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 glass px-4 py-3 hover:shadow-lg transition-all"
+        href="https://www.linkedin.com/in/michael-chen880/"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <Linkedin className="h-5 w-5 text-blue-600" />
+        LinkedIn
+        <ExternalLink className="h-3 w-3 opacity-60" />
+      </a>
+
+      {/* Email */}
+      <a
+        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-white shadow-lg hover:shadow-xl transition-all"
+        href="mailto:michaelchendevs@gmail.com"
+      >
+        <Mail className="h-5 w-5" />
+        Email Me
+      </a>
+
+      {/* Resume */}
+      <a
+        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 glass px-4 py-3 hover:shadow-lg transition-all"
+        href="/resume.pdf"
+        target="_blank"
+        rel="noreferrer"
+      >
+        📄 Resume
+        <ExternalLink className="h-3 w-3 opacity-60" />
+      </a>
+    </div>
+  </Card>
+
+  <div className="mt-8 text-center">
+    <div className="inline-flex items-center gap-2 text-sm text-slate-500">
+      © {new Date().getFullYear()} Michael Chen — built with Next.js & Tailwind
+    </div>
+  </div>
+</section>
+
       </main>
     </>
   );
