@@ -272,7 +272,7 @@ export default function HomePage() {
     {[
       {
         title: "Barkada Hospitality",
-        desc: "A full-stack reservation and payment platform designed for an Atlanta-based sushi omakase experience. Built with Next.js, Tailwind CSS, and Firebase, it delivers a clean, modern interface that mirrors the elegance of the dining experience itself. Guests can view live seat availability, choose between updated daily seatings, and secure their spot with a $50 Square deposit — all in a fast, mobile-friendly flow built for simplicity and trust.",
+        desc: "A full-stack reservation and payment platform designed for an Atlanta based sushi omakase experience. Built with Next.js, Tailwind CSS, and Firebase, it delivers a clean, modern interface that mirrors the elegance of the dining experience itself. Guests can view live seat availability, choose between updated daily seatings, and secure their spot with a $50 Square deposit - all in a fast, mobile-friendly flow built for simplicity and trust.",
         img: "/images/Screenshot_2.png",
         link: "https://barkadahospitality.info"
       },
