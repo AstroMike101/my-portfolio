@@ -30,7 +30,7 @@ export default function HomePage() {
   const [currentSection, setCurrentSection] = useState("top");
 
   useEffect(() => {
-    const sectionIds = ["top", "about", "hobbies", "now", "projects", "contact"];
+    const sectionIds = ["top", "about", "hobbies", "now", "projects", "PlacesSection", "contact"];
 
     const onScroll = () => {
       const probe = window.scrollY + window.innerHeight * 0.33;
@@ -103,6 +103,8 @@ export default function HomePage() {
             { href: "#hobbies", label: "Hobbies" },
             { href: "#now", label: "Now" },
             { href: "#projects", label: "Projects" },
+            { href: "#PlacesSection", label: "Places" },
+
             { href: "#contact", label: "Contact" },
           ].map((n) => {
             const id = n.href.slice(1);
