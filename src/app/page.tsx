@@ -264,42 +264,56 @@ export default function HomePage() {
           <RecentTracks />
         </section>
 
-        {/* Projects Section */}
-        <section id="projects" className="mx-auto max-w-5xl px-6 py-10">
-          <SectionTitle kicker="Projects" title="Fun Projects" />
+          {/* Projects Section */}
+<section id="projects" className="mx-auto max-w-5xl px-6 py-10">
+  <SectionTitle kicker="Projects" title="Fun Projects" />
 
-          <div className="grid gap-6 sm:grid-cols-2">
-            {[
-              {
-                title: "Barkada Hospitality",
-                desc: "A full-stack reservation and payment platform built with Next.js, TailwindCSS, and Firebase for a ATL based sushi omakase experience. Supports dynamic seat availability, two daily seating schedules, and real-time booking updates. Integrated Square for secure $50 deposits with the remaining balance paid in person. Designed with a clean, mobile-friendly UI to make booking fast and effortless for customers.",
-                img: "/images/Screenshot_2.png"
-              },
-              {
-                title: "Macro Buddy",
-                desc: "A full-stack nutrition tracking web app built with the MERN stack (MongoDB, Express.js, React, Node.js). Features secure JWT authentication, personalized meal diaries, and real-time macronutrient tracking. Designed with a responsive UI for easy meal logging and a smooth user experience.",
-                img: "/images/Screenshot_3.png"
-              }
-            ].map((proj) => (
-              <Card key={proj.title} className="flex flex-col h-full overflow-hidden">
-                {/* Project Image */}
-                <div className="aspect-video w-full overflow-hidden rounded-lg">
-                  <img
-                    src={proj.img}
-                    alt={proj.title}
-                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                </div>
+  <div className="grid gap-6 sm:grid-cols-2">
+    {[
+      {
+        title: "Barkada Hospitality",
+        desc: "A full-stack reservation and payment platform designed for an Atlanta-based sushi omakase experience. Built with Next.js, Tailwind CSS, and Firebase, it delivers a clean, modern interface that mirrors the elegance of the dining experience itself. Guests can view live seat availability, choose between updated daily seatings, and secure their spot with a $50 Square deposit — all in a fast, mobile-friendly flow built for simplicity and trust.",
+        img: "/images/Screenshot_2.png",
+        link: "https://barkadahospitality.info"
+      },
+      {
+        title: "Macro Buddy",
+        desc: "A full-stack nutrition tracking web app built with the MERN stack (MongoDB, Express.js, React, Node.js). Features secure JWT authentication, personalized meal diaries, and real-time macronutrient tracking. Designed with a responsive UI for easy meal logging and a smooth user experience.",
+        img: "/images/Screenshot_3.png"
+      }
+    ].map((proj) => (
+      <Card key={proj.title} className="flex flex-col h-full overflow-hidden group">
+        {/* Project Image */}
+        <div className="aspect-video w-full overflow-hidden rounded-lg">
+          <img
+            src={proj.img}
+            alt={proj.title}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
 
-                {/* Project Content */}
-                <div className="mt-4 flex flex-col flex-1">
-                  <h3 className="text-lg font-semibold">{proj.title}</h3>
-                  <p className="mt-2 text-slate-600 flex-1">{proj.desc}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
+        {/* Project Content */}
+        <div className="mt-4 flex flex-col flex-1">
+          <h3 className="text-lg font-semibold">{proj.title}</h3>
+          <p className="mt-2 text-slate-600 flex-1">{proj.desc}</p>
+          
+          {/* View Live Button for Barkada */}
+          {proj.link && (
+            <a
+              href={proj.link}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              View Live
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+        </div>
+      </Card>
+    ))}
+  </div>
+</section>
         <section id='PlacesSection'>
           <PlacesSection />
 

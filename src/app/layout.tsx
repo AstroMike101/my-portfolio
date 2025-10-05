@@ -10,10 +10,27 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-export const metadata: Metadata = {
-  title: "Michael Chen",
-  description: "About me",
+export const metadata = {
+  title: "Michael Chen | Portfolio",
+  description:
+    "A collection of my projects, design work, and development experience - built with care and creativity.",
+  openGraph: {
+    title: "Michael Chen | Portfolio",
+    description:
+      "A collection of my projects, design work, and development experience - built with care and creativity.",
+    url: "https://michaelchen.live", 
+    siteName: "Michael Chen Portfolio",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Michael Chen | Portfolio",
+    description:
+      "A collection of my projects, design work, and development experience — built with care and creativity.",
+  },
 };
+
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
