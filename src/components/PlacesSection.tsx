@@ -201,7 +201,7 @@ export default function PlacesSection() {
   return (
     <section id="places" className="mx-auto max-w-6xl px-4 sm:px-6 py-12">
       <SectionTitle kicker="Travel" title="Places I've explored" />
-      <p className="text-center text-sm text-slate-400 -mt-4 mb-8 italic">all photos taken by me</p>
+      <p className="text-center text-sm text-slate-400 -mt-4 mb-8 italic">all photos taken by me :D</p>
 
       {/* Main carousel layout */}
       <div className="relative">
