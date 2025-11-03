@@ -18,13 +18,6 @@ import {
   X,
 } from "lucide-react";
 
-import Card from "@/components/Card";
-import SectionTitle from "@/components/SectionTitle";
-import RecentTracks from "@/components/RecentTracks";
-import PlacesSection from "@/components/PlacesSection";
-
-
-
 function Typewriter({ words, typeSpeed = 70, deleteSpeed = 50, delaySpeed = 2000 }: { words: string[], typeSpeed?: number, deleteSpeed?: number, delaySpeed?: number }) {
   const [text, setText] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
@@ -55,9 +48,40 @@ function Typewriter({ words, typeSpeed = 70, deleteSpeed = 50, delaySpeed = 2000
   return <span>{text}_</span>;
 }
 
+function SectionTitle({ kicker, title }: { kicker: string, title: string }) {
+  return (
+    <motion.div 
+      className="mb-12"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+    >
+      <div className="text-sm font-bold uppercase tracking-widest mb-2 opacity-40">{kicker}</div>
+      <h2 className="text-5xl font-bold">{title}</h2>
+    </motion.div>
+  );
+}
 
+// Placeholder components
+function RecentTracks() {
+  return (
+    <div className="border-2 border-black p-8 bg-white">
+      <p className="text-lg opacity-70">Music tracks would go here (requires Spotify API integration)</p>
+    </div>
+  );
+}
 
-
+function PlacesSection() {
+  return (
+    <div className="mx-auto max-w-7xl px-6 py-20">
+      <SectionTitle kicker="Places" title="Where I've been" />
+      <div className="border-2 border-black p-12 bg-white">
+        <p className="text-lg opacity-70">Interactive map component would go here</p>
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const [currentSection, setCurrentSection] = useState("top");
@@ -65,6 +89,7 @@ export default function HomePage() {
   const [cursorVariant, setCursorVariant] = useState("default");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [codeLines, setCodeLines] = useState<Array<{ id: number; text: string; fullText: string; x: number; y: number; opacity: number; charIndex: number }>>([]);
   
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -116,6 +141,83 @@ export default function HomePage() {
     { title: "Capturing", desc: "Snapping little vignettes of life & friends.", icon: Camera, color: "#AA96DA" },
   ];
 
+  const codeSnippets = [
+    "const solve = (problem) => solution;",
+    "function build() { return awesome; }",
+    "if (curious) explore();",
+    "while (learning) { grow(); }",
+    "class Developer { code() {} }",
+    "const passion = 'software';",
+    "return optimize(performance);",
+    "async fetch() { await data; }",
+    "map(ideas).filter(best);",
+    "console.log('Hello World');",
+    "for (let i = 0; i < dreams.length; i++)",
+    "export default function() { }",
+    "import { magic } from 'code';",
+    "const create = () => innovation;",
+    "try { succeed(); } catch { learn(); }",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const shouldSpawn = Math.random() > 0.6;
+      if (shouldSpawn) {
+        const fullText = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+        const newLine = {
+          id: Date.now() + Math.random(),
+          text: "",
+          fullText: fullText,
+          x: Math.random() * 90 + 5,
+          y: Math.random() * 90 + 5,
+          opacity: 0,
+          charIndex: 0,
+        };
+        setCodeLines(prev => [...prev, newLine]);
+
+        // Fade in
+        setTimeout(() => {
+          setCodeLines(prev => prev.map(line => 
+            line.id === newLine.id ? { ...line, opacity: 1 } : line
+          ));
+        }, 50);
+
+        // Type out effect
+        const typeInterval = setInterval(() => {
+          setCodeLines(prev => prev.map(line => {
+            if (line.id === newLine.id && line.charIndex < line.fullText.length) {
+              return { 
+                ...line, 
+                text: line.fullText.slice(0, line.charIndex + 1),
+                charIndex: line.charIndex + 1 
+              };
+            }
+            return line;
+          }));
+        }, 40);
+
+        // Stop typing when complete
+        setTimeout(() => {
+          clearInterval(typeInterval);
+        }, fullText.length * 40 + 100);
+
+        // Fade out
+        setTimeout(() => {
+          setCodeLines(prev => prev.map(line => 
+            line.id === newLine.id ? { ...line, opacity: 0 } : line
+          ));
+        }, fullText.length * 40 + 2500);
+
+        // Remove
+        setTimeout(() => {
+          setCodeLines(prev => prev.filter(line => line.id !== newLine.id));
+        }, fullText.length * 40 + 3500);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <style>{`
@@ -152,6 +254,34 @@ export default function HomePage() {
       `}</style>
 
       <div className="grain"></div>
+
+      {/* Floating code snippets - BACKGROUND EFFECT */}
+      <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
+        {codeLines.map(line => (
+          <motion.div
+            key={line.id}
+            className="absolute font-mono text-base md:text-lg"
+            style={{
+              left: `${line.x}%`,
+              top: `${line.y}%`,
+              color: '#00ff00',
+              textShadow: '0 0 10px rgba(0, 255, 0, 0.5), 0 0 20px rgba(0, 255, 0, 0.3)',
+              filter: 'blur(0.3px)',
+            }}
+            animate={{ opacity: line.opacity * 0.6 }}
+            transition={{ duration: 0.5 }}
+          >
+            <span>{line.text}</span>
+            {line.fullText && line.charIndex < line.fullText.length && (
+              <motion.span 
+                className="inline-block w-2 h-5 bg-green-400 ml-0.5"
+                animate={{ opacity: [1, 0, 1] }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+              />
+            )}
+          </motion.div>
+        ))}
+      </div>
 
       {/* Custom Cursor */}
       <motion.div
