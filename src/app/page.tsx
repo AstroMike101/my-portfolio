@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Typewriter } from 'react-simple-typewriter';
 import {
   Linkedin,
   Mail,
-  MapPin,
   Plane,
   Trophy,
   Music,
@@ -25,11 +23,48 @@ import SectionTitle from "@/components/SectionTitle";
 import RecentTracks from "@/components/RecentTracks";
 import PlacesSection from "@/components/PlacesSection";
 
+
+
+function Typewriter({ words, typeSpeed = 70, deleteSpeed = 50, delaySpeed = 2000 }: { words: string[], typeSpeed?: number, deleteSpeed?: number, delaySpeed?: number }) {
+  const [text, setText] = useState("");
+  const [wordIndex, setWordIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentWord = words[wordIndex];
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        if (text.length < currentWord.length) {
+          setText(currentWord.slice(0, text.length + 1));
+        } else {
+          setTimeout(() => setIsDeleting(true), delaySpeed);
+        }
+      } else {
+        if (text.length > 0) {
+          setText(currentWord.slice(0, text.length - 1));
+        } else {
+          setIsDeleting(false);
+          setWordIndex((wordIndex + 1) % words.length);
+        }
+      }
+    }, isDeleting ? deleteSpeed : typeSpeed);
+
+    return () => clearTimeout(timeout);
+  }, [text, isDeleting, wordIndex, words, typeSpeed, deleteSpeed, delaySpeed]);
+
+  return <span>{text}_</span>;
+}
+
+
+
+
+
 export default function HomePage() {
   const [currentSection, setCurrentSection] = useState("top");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [cursorVariant, setCursorVariant] = useState("default");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -57,6 +92,11 @@ export default function HomePage() {
         if (probe >= top) active = id;
       }
       setCurrentSection(active);
+      
+      // Calculate scroll progress
+      const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / windowHeight) * 100;
+      setScrollProgress(progress);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
@@ -104,16 +144,6 @@ export default function HomePage() {
           background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-20px) rotate(2deg); }
-          66% { transform: translateY(-10px) rotate(-2deg); }
-        }
-
-        .floating {
-          animation: float 6s ease-in-out infinite;
-        }
-
         .terminal-text {
           color: #00ff00;
           text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
@@ -132,7 +162,6 @@ export default function HomePage() {
           scale: cursorVariant === "hover" ? 1.5 : 1,
         }}
         transition={{ type: "spring", stiffness: 500, damping: 28 }}
-        style={{ cursor: 'none' }}
       />
 
       <main className="relative min-h-screen bg-[#FAFAFA] text-black">
@@ -141,8 +170,11 @@ export default function HomePage() {
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="fixed top-0 left-0 right-0 z-50 border-b-2 border-black bg-white"
+          className="fixed top-0 left-0 right-0 z-50 border-b-2 border-black bg-white md:bg-white bg-opacity-95 md:bg-opacity-100 backdrop-blur-sm"
         >
+          {/* Progress bar */}
+          <div className="absolute bottom-0 left-0 h-1 bg-black transition-all duration-150" style={{ width: `${scrollProgress}%` }} />
+          
           <div className="mx-auto max-w-7xl px-6">
             <div className="flex items-center justify-between h-20">
               <motion.a 
@@ -192,8 +224,6 @@ export default function HomePage() {
                 className="md:hidden text-black cursor-pointer"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 whileTap={{ scale: 0.95 }}
-                onMouseEnter={() => setCursorVariant("hover")}
-                onMouseLeave={() => setCursorVariant("default")}
               >
                 {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </motion.button>
@@ -221,17 +251,16 @@ export default function HomePage() {
                       const id = n.href.slice(1);
                       const active = currentSection === id;
                       return (
-                        <motion.a
+                        <a
                           key={n.href}
                           href={n.href}
                           onClick={() => setMobileMenuOpen(false)}
                           className={`text-sm font-bold uppercase tracking-wider transition-opacity cursor-pointer py-2 ${
                             active ? "opacity-100" : "opacity-40"
                           }`}
-                          whileTap={{ scale: 0.95 }}
                         >
                           {n.label}
-                        </motion.a>
+                        </a>
                       );
                     })}
                   </div>
@@ -246,69 +275,87 @@ export default function HomePage() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
+            transition={{ duration: 1, ease: "easeOut" }}
           >
             <motion.div 
               className="inline-flex items-center gap-2 text-sm font-mono mb-8 border-2 border-black px-4 py-2 bg-white"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, scale: 0.8, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
               <Circle className="h-2 w-2 fill-current" />
               ATLANTA, GA
             </motion.div>
 
-            <motion.h1 
-              className="text-[8vw] md:text-[6rem] font-bold leading-[0.9] mb-8 tracking-tight"
-            >
-              <motion.span 
-                className="block"
-                initial={{ opacity: 0, y: 60 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            <div className="text-[8vw] md:text-[6rem] font-bold leading-[0.9] mb-8 tracking-tight">
+              <motion.div 
+                className="block overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
               >
-                HI, I'M
-              </motion.span>
-              <motion.span 
-                className="block"
-                initial={{ opacity: 0, y: 60 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                <motion.span
+                  className="block"
+                  initial={{ y: 100 }}
+                  animate={{ y: 0 }}
+                  transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  HI, I'M
+                </motion.span>
+              </motion.div>
+              
+              <motion.div 
+                className="block overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
               >
-                MICHAEL—
-              </motion.span>
-              <motion.span 
-                className="block terminal-text"
-                initial={{ opacity: 0, y: 60 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                <motion.span
+                  className="block"
+                  initial={{ y: 100 }}
+                  animate={{ y: 0 }}
+                  transition={{ duration: 1.2, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  MICHAEL—
+                </motion.span>
+              </motion.div>
+              
+              <motion.div 
+                className="block overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 1.1 }}
               >
-                <Typewriter
-                  words={["SOFTWARE ENGINEER", "PROBLEM SOLVER", "LIFELONG LEARNER"]}
-                  loop
-                  cursor
-                  cursorStyle="_"
-                  typeSpeed={70}
-                  deleteSpeed={50}
-                  delaySpeed={2000}
-                />
-              </motion.span>
-            </motion.h1>
+                <motion.span
+                  className="block terminal-text"
+                  initial={{ y: 100 }}
+                  animate={{ y: 0 }}
+                  transition={{ duration: 1.2, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Typewriter
+                    words={["SOFTWARE ENGINEER", "PROBLEM SOLVER", "LIFELONG LEARNER"]}
+                    typeSpeed={70}
+                    deleteSpeed={50}
+                    delaySpeed={2000}
+                  />
+                </motion.span>
+              </motion.div>
+            </div>
 
             <motion.p 
               className="text-2xl font-medium max-w-3xl mb-12 leading-relaxed"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 1.8, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             >
               I design & build clean, thoughtful software. When I'm not developing, you'll probably find me on a tennis court, at a concert, or planning my next outdoor escape.
             </motion.p>
 
             <motion.div 
               className="flex flex-wrap items-center gap-4"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.5, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 2.2, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             >
               <motion.a 
                 href="#contact"
@@ -445,7 +492,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Now - Simplified animations */}
+        {/* Now */}
         <section id="now" className="mx-auto max-w-7xl px-6 py-20">
           <SectionTitle kicker="Now" title="What I'm up to" />
           
@@ -482,7 +529,7 @@ export default function HomePage() {
                 onMouseLeave={() => setCursorVariant("default")}
               >
                 <motion.div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-10"
+                  className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity"
                   style={{ background: item.color }}
                 />
                 
@@ -548,11 +595,11 @@ export default function HomePage() {
               <motion.div 
                 key={proj.title}
                 className="group border-2 border-black bg-white overflow-hidden cursor-pointer"
-                initial={{ opacity: 0, y: 50, rotate: i % 2 === 0 ? -3 : 3 }}
-                whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.2 }}
-                whileHover={{ y: -12, rotate: i % 2 === 0 ? 2 : -2 }}
+                whileHover={{ y: -8 }}
                 onMouseEnter={() => setCursorVariant("hover")}
                 onMouseLeave={() => setCursorVariant("default")}
               >
@@ -598,20 +645,14 @@ export default function HomePage() {
         {/* Contact */}
         <section id="contact" className="mx-auto max-w-7xl px-6 py-20">
           <SectionTitle kicker="Contact" title="Let's connect" />
-          <motion.div 
-            className="border-2 border-black p-12 bg-white"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="border-2 border-black p-12 bg-white">
             <div className="flex flex-wrap gap-4">
               {[
                 { href: "https://www.linkedin.com/in/michael-chen880/", icon: Linkedin, label: "LinkedIn", external: true },
                 { href: "mailto:michaelchendevs@gmail.com", icon: Mail, label: "Email Me", primary: true },
                 { href: "/resume.pdf", icon: null, label: "📄 Resume", external: true }
               ].map((link, i) => (
-                <motion.a
+                <a
                   key={link.label}
                   href={link.href}
                   target={link.external ? "_blank" : undefined}
@@ -621,31 +662,19 @@ export default function HomePage() {
                       ? "bg-black text-white hover:bg-opacity-80" 
                       : "border-2 border-black hover:bg-black hover:text-white"
                   }`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1, duration: 0.5 }}
-                  whileHover={{ y: -4, scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   onMouseEnter={() => setCursorVariant("hover")}
                   onMouseLeave={() => setCursorVariant("default")}
                 >
                   {link.icon && <link.icon className="h-4 w-4" />}
                   {link.label}
-                </motion.a>
+                </a>
               ))}
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div 
-            className="mt-12 text-center font-mono text-sm opacity-50"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 0.5 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.5 }}
-          >
+          <div className="mt-12 text-center font-mono text-sm opacity-50">
             <p>© {new Date().getFullYear()} MICHAEL CHEN</p>
-          </motion.div>
+          </div>
         </section>
       </main>
     </>
