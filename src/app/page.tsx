@@ -22,12 +22,30 @@ import {
   Sun,
 } from "lucide-react";
 
-function Typewriter({ words, typeSpeed = 70, deleteSpeed = 50, delaySpeed = 2000 }: { words: string[], typeSpeed?: number, deleteSpeed?: number, delaySpeed?: number }) {
+function Typewriter({
+  words,
+  typeSpeed = 70,
+  deleteSpeed = 50,
+  delaySpeed = 2000,
+  startDelay = 0, // 🟩 new prop
+}: {
+  words: string[];
+  typeSpeed?: number;
+  deleteSpeed?: number;
+  delaySpeed?: number;
+  startDelay?: number;
+}) {
   const [text, setText] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [started, setStarted] = useState(false); 
+  useEffect(() => {
+    const timer = setTimeout(() => setStarted(true), startDelay);
+    return () => clearTimeout(timer);
+  }, [startDelay]);
 
   useEffect(() => {
+    if (!started) return; 
     const currentWord = words[wordIndex];
     const timeout = setTimeout(() => {
       if (!isDeleting) {
@@ -47,10 +65,11 @@ function Typewriter({ words, typeSpeed = 70, deleteSpeed = 50, delaySpeed = 2000
     }, isDeleting ? deleteSpeed : typeSpeed);
 
     return () => clearTimeout(timeout);
-  }, [text, isDeleting, wordIndex, words, typeSpeed, deleteSpeed, delaySpeed]);
+  }, [text, isDeleting, wordIndex, words, typeSpeed, deleteSpeed, delaySpeed, started]);
 
   return <span>{text}_</span>;
 }
+
 
 import Card from "@/components/Card";
 import RecentTracks from "@/components/RecentTracks";
@@ -212,7 +231,7 @@ export default function HomePage() {
       </motion.div>
 
     <MatrixRain side="left" darkMode={darkMode} />
-<MatrixRain side="right" darkMode={darkMode} />
+    <MatrixRain side="right" darkMode={darkMode} />
 
 
       <main className={`relative min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#0a0a0a] text-white' : 'bg-[#FAFAFA] text-black'}`} style={{ position: 'relative', zIndex: 2 }}>
@@ -419,6 +438,7 @@ export default function HomePage() {
                     typeSpeed={70}
                     deleteSpeed={50}
                     delaySpeed={2000}
+                    startDelay={2000}
                   />
                 </motion.span>
               </motion.div>
