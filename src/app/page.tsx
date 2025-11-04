@@ -437,7 +437,7 @@ export default function HomePage() {
                     words={["SOFTWARE ENGINEER", "PROBLEM SOLVER", "LIFELONG LEARNER"]}
                     typeSpeed={70}
                     deleteSpeed={50}
-                    delaySpeed={2000}
+                    delaySpeed={1000}
                     startDelay={2000}
                   />
                 </motion.span>
