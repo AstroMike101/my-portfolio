@@ -10,7 +10,8 @@ import { X, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
-export default function PlacesSection() {
+export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -200,7 +201,7 @@ export default function PlacesSection() {
 
   return (
     <section id="places" className="mx-auto max-w-6xl px-4 sm:px-6 py-12">
-      <SectionTitle kicker="Travel" title="Places I've explored" />
+<SectionTitle kicker="Travel" title="Places I've explored" darkMode={darkMode} />
       <p className="text-center text-sm text-slate-400 -mt-4 mb-8 italic">all photos taken by me :D</p>
 
       {/* Main carousel layout */}

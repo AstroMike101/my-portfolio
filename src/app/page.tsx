@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import MatrixRain from "@/components/MatrixRain";
+
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Linkedin,
@@ -16,6 +18,8 @@ import {
   Circle,
   Menu,
   X,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 function Typewriter({ words, typeSpeed = 70, deleteSpeed = 50, delaySpeed = 2000 }: { words: string[], typeSpeed?: number, deleteSpeed?: number, delaySpeed?: number }) {
@@ -49,9 +53,33 @@ function Typewriter({ words, typeSpeed = 70, deleteSpeed = 50, delaySpeed = 2000
 }
 
 import Card from "@/components/Card";
-import SectionTitle from "@/components/SectionTitle";
 import RecentTracks from "@/components/RecentTracks";
 import PlacesSection from "@/components/PlacesSection";
+
+function SectionTitle({ kicker, title }: { kicker: string, title: string }) {
+  return (
+    <div className="mb-12">
+      <motion.p 
+        className="text-sm font-bold uppercase tracking-wider mb-2 opacity-60"
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 0.6, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+        {kicker}
+      </motion.p>
+      <motion.h2 
+        className="text-5xl md:text-6xl font-bold"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      >
+        {title}
+      </motion.h2>
+    </div>
+  );
+}
 
 
 export default function HomePage() {
@@ -60,6 +88,8 @@ export default function HomePage() {
   const [cursorVariant, setCursorVariant] = useState("default");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [darkMode, setDarkMode] = useState(false);
+  
   
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -69,6 +99,10 @@ export default function HomePage() {
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
+
+  
+
+ 
 
   useEffect(() => {
     const sectionIds = ["top", "about", "hobbies", "now", "projects", "PlacesSection", "contact"];
@@ -122,53 +156,79 @@ export default function HomePage() {
         }
         
         body {
-          background: #FAFAFA;
+          background: ${darkMode ? '#0a0a0a' : '#FAFAFA'};
+          transition: background 0.3s ease;
         }
         
         ::selection {
-          background: black;
-          color: white;
+          background: ${darkMode ? 'white' : 'black'};
+          color: ${darkMode ? 'black' : 'white'};
         }
 
-        .grain {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          opacity: 0.03;
-          z-index: 100;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
+
 
         .terminal-text {
           color: #00ff00;
           text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
           font-family: 'Courier New', monospace;
         }
+
+       
+
+
+        * {
+          cursor: none !important;
+        }
+
+        @media (max-width: 768px) {
+          * {
+            cursor: auto !important;
+          }
+        }
       `}</style>
 
-      <div className="grain"></div>
-
+      
+      
       {/* Custom Cursor */}
       <motion.div
-        className="hidden md:block fixed w-8 h-8 border-2 border-black rounded-full pointer-events-none z-[9999] mix-blend-difference"
+        className="hidden md:block fixed pointer-events-none z-[9999]"
         animate={{
-          x: mousePosition.x - 16,
-          y: mousePosition.y - 16,
-          scale: cursorVariant === "hover" ? 1.5 : 1,
+          x: mousePosition.x - 10,
+          y: mousePosition.y - 10,
         }}
-        transition={{ type: "spring", stiffness: 500, damping: 28 }}
-      />
+        transition={{ type: "spring", stiffness: 1000, damping: 50, mass: 0.5 }}
+      >
+        <motion.div
+          className="w-5 h-5 rounded-full border-2"
+          style={{ 
+            borderColor: darkMode ? 'white' : 'black',
+            backgroundColor: cursorVariant === "hover" ? (darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)') : 'transparent'
+          }}
+          animate={{
+            scale: cursorVariant === "hover" ? 2 : 1,
+          }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        />
+      </motion.div>
 
-      <main className="relative min-h-screen bg-[#FAFAFA] text-black">
+    <MatrixRain side="left" darkMode={darkMode} />
+<MatrixRain side="right" darkMode={darkMode} />
+
+
+      <main className={`relative min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#0a0a0a] text-white' : 'bg-[#FAFAFA] text-black'}`} style={{ position: 'relative', zIndex: 2 }}>
         {/* Navigation */}
         <motion.nav 
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="fixed top-0 left-0 right-0 z-50 border-b-2 border-black bg-white md:bg-white bg-opacity-95 md:bg-opacity-100 backdrop-blur-sm"
+          className={`fixed top-0 left-0 right-0 z-50 border-b-2 backdrop-blur-sm transition-colors duration-300 ${
+            darkMode 
+              ? 'border-white bg-black bg-opacity-95' 
+              : 'border-black bg-white md:bg-white bg-opacity-95 md:bg-opacity-100'
+          }`}
         >
           {/* Progress bar */}
-          <div className="absolute bottom-0 left-0 h-1 bg-black transition-all duration-150" style={{ width: `${scrollProgress}%` }} />
+          <div className={`absolute bottom-0 left-0 h-1 transition-all duration-150 ${darkMode ? 'bg-white' : 'bg-black'}`} style={{ width: `${scrollProgress}%` }} />
           
           <div className="mx-auto max-w-7xl px-6">
             <div className="flex items-center justify-between h-20">
@@ -212,16 +272,41 @@ export default function HomePage() {
                     </motion.a>
                   );
                 })}
+                
+                {/* Dark Mode Toggle */}
+                <motion.button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="p-2 cursor-pointer"
+                  onMouseEnter={() => setCursorVariant("hover")}
+                  onMouseLeave={() => setCursorVariant("default")}
+                  whileHover={{ scale: 1.1, rotate: 180 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Toggle dark mode"
+                >
+                  {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </motion.button>
               </div>
 
               {/* Mobile Menu Button */}
-              <motion.button
-                className="md:hidden text-black cursor-pointer"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                whileTap={{ scale: 0.95 }}
-              >
-                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </motion.button>
+              <div className="flex md:hidden items-center gap-4">
+                {/* Dark Mode Toggle Mobile */}
+                <motion.button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="p-2 cursor-pointer"
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Toggle dark mode"
+                >
+                  {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </motion.button>
+                
+                <motion.button
+                  className={`cursor-pointer ${darkMode ? 'text-white' : 'text-black'}`}
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </motion.button>
+              </div>
             </div>
 
             {/* Mobile Menu */}
@@ -232,7 +317,7 @@ export default function HomePage() {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="md:hidden overflow-hidden border-t-2 border-black"
+                  className={`md:hidden overflow-hidden border-t-2 ${darkMode ? 'border-white' : 'border-black'}`}
                 >
                   <div className="py-4 flex flex-col gap-4">
                     {[
@@ -273,7 +358,9 @@ export default function HomePage() {
             transition={{ duration: 1, ease: "easeOut" }}
           >
             <motion.div 
-              className="inline-flex items-center gap-2 text-sm font-mono mb-8 border-2 border-black px-4 py-2 bg-white"
+              className={`inline-flex items-center gap-2 text-sm font-mono mb-8 border-2 px-4 py-2 transition-colors duration-300 ${
+                darkMode ? 'border-white bg-black' : 'border-black bg-white'
+              }`}
               initial={{ opacity: 0, scale: 0.8, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -354,7 +441,9 @@ export default function HomePage() {
             >
               <motion.a 
                 href="#contact"
-                className="group relative inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider bg-black text-white overflow-hidden cursor-pointer"
+                className={`group relative inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider overflow-hidden cursor-pointer transition-colors duration-300 ${
+                  darkMode ? 'bg-white text-black' : 'bg-black text-white'
+                }`}
                 onMouseEnter={() => setCursorVariant("hover")}
                 onMouseLeave={() => setCursorVariant("default")}
                 whileHover={{ scale: 1.05 }}
@@ -371,7 +460,11 @@ export default function HomePage() {
               </motion.a>
               <motion.a 
                 href="#about"
-                className="inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider border-2 border-black hover:bg-black hover:text-white transition-colors cursor-pointer"
+                className={`inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider border-2 transition-colors cursor-pointer ${
+                  darkMode 
+                    ? 'border-white hover:bg-white hover:text-black' 
+                    : 'border-black hover:bg-black hover:text-white'
+                }`}
                 onMouseEnter={() => setCursorVariant("hover")}
                 onMouseLeave={() => setCursorVariant("default")}
                 whileHover={{ scale: 1.05 }}
@@ -388,7 +481,9 @@ export default function HomePage() {
           <SectionTitle kicker="About" title="Who I am" />
           <div className="grid gap-8 md:grid-cols-12">
             <motion.div 
-              className="md:col-span-7 border-2 border-black p-12 bg-white cursor-pointer"
+              className={`md:col-span-7 border-2 p-12 cursor-pointer transition-colors duration-300 ${
+                darkMode ? 'border-white bg-black' : 'border-black bg-white'
+              }`}
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -423,7 +518,9 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div 
-              className="md:col-span-5 border-2 border-black p-12 bg-white cursor-pointer"
+              className={`md:col-span-5 border-2 p-12 cursor-pointer transition-colors duration-300 ${
+                darkMode ? 'border-white bg-black' : 'border-black bg-white'
+              }`}
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -437,7 +534,9 @@ export default function HomePage() {
                 {[".NET / C#", "SQL", "AWS", "Java", "REST APIs", "HTML/CSS/JS", "React", "Next.js", "Tailwind", "Vue.js", "Azure", "Firebase", "Git", "JUnit"].map((t, i) => (
                   <motion.span 
                     key={t} 
-                    className="px-3 py-2 text-xs font-bold bg-black text-white uppercase tracking-wider cursor-pointer"
+                    className={`px-3 py-2 text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors duration-300 ${
+                      darkMode ? 'bg-white text-black' : 'bg-black text-white'
+                    }`}
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
@@ -464,7 +563,9 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 whileHover={{ y: -8 }}
-                className="group border-2 border-black p-8 bg-white relative overflow-hidden cursor-pointer"
+                className={`group border-2 p-8 relative overflow-hidden cursor-pointer transition-colors duration-300 ${
+                  darkMode ? 'border-white bg-black' : 'border-black bg-white'
+                }`}
                 onMouseEnter={() => setCursorVariant("hover")}
                 onMouseLeave={() => setCursorVariant("default")}
               >
@@ -514,7 +615,9 @@ export default function HomePage() {
             ].map((item, i) => (
               <motion.div
                 key={item.label}
-                className="border-2 border-black p-8 bg-white relative overflow-hidden group cursor-pointer"
+                className={`border-2 p-8 relative overflow-hidden group cursor-pointer transition-colors duration-300 ${
+                  darkMode ? 'border-white bg-black' : 'border-black bg-white'
+                }`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -542,7 +645,7 @@ export default function HomePage() {
                 </div>
 
                 <div
-                  className="absolute top-4 right-4 w-12 h-12 rounded-full border-2 border-black opacity-10"
+                  className={`absolute top-4 right-4 w-12 h-12 rounded-full border-2 opacity-10 ${darkMode ? 'border-white' : 'border-black'}`}
                   style={{ background: item.color }}
                 />
               </motion.div>
@@ -589,7 +692,9 @@ export default function HomePage() {
             ].map((proj, i) => (
               <motion.div 
                 key={proj.title}
-                className="group border-2 border-black bg-white overflow-hidden cursor-pointer"
+                className={`group border-2 overflow-hidden cursor-pointer transition-colors duration-300 ${
+                  darkMode ? 'border-white bg-black' : 'border-black bg-white'
+                }`}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -619,7 +724,9 @@ export default function HomePage() {
                       href={proj.link}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider bg-black text-white transition-all cursor-pointer"
+                      className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                        darkMode ? 'bg-white text-black' : 'bg-black text-white'
+                      }`}
                       whileHover={{ x: 5 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -634,13 +741,17 @@ export default function HomePage() {
         </section>
 
         <section id='PlacesSection'>
-          <PlacesSection />
+          <div className="mx-auto max-w-7xl px-6">
+<PlacesSection darkMode={darkMode} />
+          </div>
         </section>
 
         {/* Contact */}
         <section id="contact" className="mx-auto max-w-7xl px-6 py-20">
           <SectionTitle kicker="Contact" title="Let's connect" />
-          <div className="border-2 border-black p-12 bg-white">
+          <div className={`border-2 p-12 transition-colors duration-300 ${
+            darkMode ? 'border-white bg-black' : 'border-black bg-white'
+          }`}>
             <div className="flex flex-wrap gap-4">
               {[
                 { href: "https://www.linkedin.com/in/michael-chen880/", icon: Linkedin, label: "LinkedIn", external: true },
@@ -654,8 +765,12 @@ export default function HomePage() {
                   rel={link.external ? "noreferrer" : undefined}
                   className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     link.primary 
-                      ? "bg-black text-white hover:bg-opacity-80" 
-                      : "border-2 border-black hover:bg-black hover:text-white"
+                      ? darkMode 
+                        ? "bg-white text-black hover:bg-opacity-80" 
+                        : "bg-black text-white hover:bg-opacity-80"
+                      : darkMode
+                        ? "border-2 border-white hover:bg-white hover:text-black"
+                        : "border-2 border-black hover:bg-black hover:text-white"
                   }`}
                   onMouseEnter={() => setCursorVariant("hover")}
                   onMouseLeave={() => setCursorVariant("default")}
