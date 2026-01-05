@@ -195,9 +195,7 @@ export default function HomePage() {
        
 
 
-        * {
-          cursor: none !important;
-        }
+
 
         @media (max-width: 768px) {
           * {
@@ -208,27 +206,7 @@ export default function HomePage() {
 
       
       
-      {/* Custom Cursor */}
-      <motion.div
-        className="hidden md:block fixed pointer-events-none z-[9999]"
-        animate={{
-          x: mousePosition.x - 10,
-          y: mousePosition.y - 10,
-        }}
-        transition={{ type: "spring", stiffness: 1000, damping: 50, mass: 0.5 }}
-      >
-        <motion.div
-          className="w-5 h-5 rounded-full border-2"
-          style={{ 
-            borderColor: darkMode ? 'white' : 'black',
-            backgroundColor: cursorVariant === "hover" ? (darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)') : 'transparent'
-          }}
-          animate={{
-            scale: cursorVariant === "hover" ? 2 : 1,
-          }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        />
-      </motion.div>
+     
 
     <MatrixRain side="left" darkMode={darkMode} />
     <MatrixRain side="right" darkMode={darkMode} />
@@ -776,7 +754,7 @@ export default function HomePage() {
               {[
                 { href: "https://www.linkedin.com/in/michael-chen880/", icon: Linkedin, label: "LinkedIn", external: true },
                 { href: "mailto:michaelchendevs@gmail.com", icon: Mail, label: "Email Me", primary: true },
-                { href: "/resume.pdf", icon: null, label: "📄 Resume", external: true }
+                { href: "/updated_resume.pdf", icon: null, label: "📄 Resume", external: true }
               ].map((link, i) => (
                 <a
                   key={link.label}

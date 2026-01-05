@@ -42,6 +42,13 @@ export const places: Place[] = [
         img: "/images/kyoto.jpg",
         desc: "Temples, gardens, tea houses, and timeless Japanese culture."
     },
+
+    {
+        name: "Lisbon, Portugal",
+        coords: [38.7223, -9.1393],
+        img: "/images/lisbon.jpg",
+        desc: "Hills, tiled streets, pastel de natas, and golden light over the Tagus."
+    },
     {
         name: "Milwaukee, WI",
         coords: [43.0389, -87.9065],
