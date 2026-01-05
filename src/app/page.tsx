@@ -754,7 +754,7 @@ export default function HomePage() {
               {[
                 { href: "https://www.linkedin.com/in/michael-chen880/", icon: Linkedin, label: "LinkedIn", external: true },
                 { href: "mailto:michaelchendevs@gmail.com", icon: Mail, label: "Email Me", primary: true },
-                { href: "/updated_resume.pdf", icon: null, label: "📄 Resume", external: true }
+                { href: "/MichaelChenResume.pdf", icon: null, label: "📄 Resume", external: true }
               ].map((link, i) => (
                 <a
                   key={link.label}
