@@ -207,9 +207,10 @@ export default function HomePage() {
       
       
      
-
+    {/*
     <MatrixRain side="left" darkMode={darkMode} />
     <MatrixRain side="right" darkMode={darkMode} />
+    */
 
 
       <main className={`relative min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#0a0a0a] text-white' : 'bg-[#FAFAFA] text-black'}`} style={{ position: 'relative', zIndex: 2 }}>
@@ -785,6 +786,7 @@ export default function HomePage() {
           </div>
         </section>
       </main>
+      }
     </>
   );
 }
