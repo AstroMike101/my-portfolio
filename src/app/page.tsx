@@ -185,7 +185,7 @@ export default function HomePage() {
       desc: "An interactive web app for designing custom signatures with realistic, practice-ready styles. Using Next.js and opentype.js, it offers handwriting-based fonts, structural variations, and live previews for seamless customization.",
       images: [
         "/images/sig1.png",
-        "/images/sig2-2.png",
+        "/images/sig2.png",
         "/images/sig3.png",
       ],
       link: "https://signature-studio-nine.vercel.app/",
