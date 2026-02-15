@@ -24,7 +24,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "https://michaelchen.live/og-image.png", 
+        url: "https://michaelchen.live/images/og-image.png", // 
         width: 1200,
         height: 630,
         alt: "Michael Chen - Software Engineer Portfolio",
@@ -32,11 +32,11 @@ export const metadata = {
     ],
   },
   twitter: {
-    card: "summary_large_image", 
+    card: "summary_large_image",
     title: "Michael Chen | Portfolio",
     description:
       "A collection of my projects, design work, and development experience, built with care and creativity.",
-    images: ["https://michaelchen.live/og-image.png"],
+    images: ["https://michaelchen.live/images/og-image.png"], 
   },
 };
 
