@@ -172,9 +172,9 @@ export default function HomePage() {
       title: "Barkada Hospitality",
       desc: "A full-stack reservation and payment platform designed for an Atlanta based sushi omakase experience. Built with Next.js, Tailwind CSS, and Firebase.",
       images: [
-        "/images/barkad1.png",
-        "/images/barkada2.png",
-        "/images/barkada3.png",
+        "/images/Screenshot_2.png",
+        "/images/barkada-2.png",
+        "/images/barkada-3.png",
       ],
       link: "https://barkadahospitality.info",
       color: "#1F2937"
@@ -182,11 +182,11 @@ export default function HomePage() {
     {
       id: "signature",
       title: "Signature Studio",
-      desc: "An interactive web app for designing custom signatures with realistic, practice-ready styles. Using Next.js and opentype.js, it offers handwriting-based fonts, structural variations, and live previews for seamless customization.",
+      desc: "An interactive signature design web app that generates realistic, practice-ready signature styles using SVG path rendering. Built with Next.js and opentype.js, featuring handwriting-based fonts, structural variations, customization, and live previews.",
       images: [
-        "/images/sig1.png",
-        "/images/sig2.png",
-        "/images/sig3.png",
+        "/images/Screenshot_5.png",
+        "/images/signature-2.png",
+        "/images/signature-3.png",
       ],
       link: "https://signature-studio-nine.vercel.app/",
       color: "#1F2937"
@@ -195,19 +195,34 @@ export default function HomePage() {
 
   // Auto-cycle project images
   useEffect(() => {
-    const intervals: { [key: string]: NodeJS.Timeout } = {};
-
+    // Initialize all projects to index 0
+    const initialIndices: { [key: string]: number } = {};
     projects.forEach((proj) => {
-      intervals[proj.id] = setInterval(() => {
-        setProjectImageIndices((prev) => ({
-          ...prev,
-          [proj.id]: ((prev[proj.id] || 0) + 1) % proj.images.length,
-        }));
-      }, 3000); // Change image every 3 seconds
+      initialIndices[proj.id] = 0;
     });
+    setProjectImageIndices(initialIndices);
+
+    // Start cycling after a small delay to ensure first image shows
+    const startTimeout = setTimeout(() => {
+      const intervals: { [key: string]: NodeJS.Timeout } = {};
+
+      projects.forEach((proj) => {
+        intervals[proj.id] = setInterval(() => {
+          setProjectImageIndices((prev) => ({
+            ...prev,
+            [proj.id]: ((prev[proj.id] || 0) + 1) % proj.images.length,
+          }));
+        }, 3000); // Change image every 3 seconds
+      });
+
+      // Cleanup intervals
+      return () => {
+        Object.values(intervals).forEach(clearInterval);
+      };
+    }, 100); // Small delay to ensure initial render
 
     return () => {
-      Object.values(intervals).forEach(clearInterval);
+      clearTimeout(startTimeout);
     };
   }, []);
 
