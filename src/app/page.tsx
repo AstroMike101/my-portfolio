@@ -27,7 +27,7 @@ function Typewriter({
   typeSpeed = 70,
   deleteSpeed = 50,
   delaySpeed = 2000,
-  startDelay = 0, // 🟩 new prop
+  startDelay = 0,
 }: {
   words: string[];
   typeSpeed?: number;
@@ -108,6 +108,7 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [darkMode, setDarkMode] = useState(false);
+  const [projectImageIndices, setProjectImageIndices] = useState<{ [key: string]: number }>({});
 
 
   useEffect(() => {
@@ -163,6 +164,52 @@ export default function HomePage() {
     { title: "Travel", desc: "Collecting moments, not magnets. Always down for a new city or country.", icon: Plane, color: "#F38181" },
     { title: "Capturing", desc: "Snapping little vignettes of life & friends.", icon: Camera, color: "#AA96DA" },
   ];
+
+  // Project data with multiple images
+  const projects = [
+    {
+      id: "barkada",
+      title: "Barkada Hospitality",
+      desc: "A full-stack reservation and payment platform designed for an Atlanta based sushi omakase experience. Built with Next.js, Tailwind CSS, and Firebase.",
+      images: [
+        "/images/barkad1.png",
+        "/images/barkada2.png",
+        "/images/barkada3.png",
+      ],
+      link: "https://barkadahospitality.info",
+      color: "#1F2937"
+    },
+    {
+      id: "signature",
+      title: "Signature Studio",
+      desc: "An interactive web app for designing custom signatures with realistic, practice-ready styles. Using Next.js and opentype.js, it offers handwriting-based fonts, structural variations, and live previews for seamless customization.",
+      images: [
+        "/images/sig1.png",
+        "/images/sig2-2.png",
+        "/images/sig3.png",
+      ],
+      link: "https://signature-studio-nine.vercel.app/",
+      color: "#1F2937"
+    }
+  ];
+
+  // Auto-cycle project images
+  useEffect(() => {
+    const intervals: { [key: string]: NodeJS.Timeout } = {};
+
+    projects.forEach((proj) => {
+      intervals[proj.id] = setInterval(() => {
+        setProjectImageIndices((prev) => ({
+          ...prev,
+          [proj.id]: ((prev[proj.id] || 0) + 1) % proj.images.length,
+        }));
+      }, 3000); // Change image every 3 seconds
+    });
+
+    return () => {
+      Object.values(intervals).forEach(clearInterval);
+    };
+  }, []);
 
   return (
     <>
@@ -663,69 +710,79 @@ export default function HomePage() {
           <section id="projects" className="mx-auto max-w-7xl px-6 py-20">
             <SectionTitle kicker="Projects" title="Fun Projects" />
             <div className="grid gap-8 md:grid-cols-2">
-              {[
-                {
-                  title: "Barkada Hospitality",
-                  desc: "A full-stack reservation and payment platform designed for an Atlanta based sushi omakase experience. Built with Next.js, Tailwind CSS, and Firebase.",
-                  img: "/images/Screenshot_2.png",
-                  link: "https://barkadahospitality.info",
-                  color: "#FF6B6B"
-                },
-                {
-                  title: "Signature Studio",
-                  desc: "An interactive signature design web app that generates realistic, practice-ready signature styles using SVG path rendering. Built with Next.js and opentype.js, featuring handwriting-based fonts, structural variations, and live previews.",
-                img: "/images/Screenshot_5.png",
-                 link: "https://signature-studio-nine.vercel.app/",
+              {projects.map((proj, i) => {
+                const currentImageIndex = projectImageIndices[proj.id] || 0;
+                
+                return (
+                  <motion.div
+                    key={proj.id}
+                    className={`group border-2 overflow-hidden cursor-pointer transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
+                      }`}
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: i * 0.2 }}
+                    whileHover={{ y: -8 }}
+                    onMouseEnter={() => setCursorVariant("hover")}
+                    onMouseLeave={() => setCursorVariant("default")}
+                  >
+                    <div className="aspect-video overflow-hidden relative">
+                      <motion.div
+                        className="absolute inset-0 z-10 opacity-0 group-hover:opacity-20 transition-opacity"
+                        style={{ background: proj.color }}
+                      />
+                      
+                      {/* Auto-cycling images with smooth crossfade */}
+                      <div className="relative w-full h-full">
+                        <AnimatePresence mode="wait">
+                          <motion.img
+                            key={currentImageIndex}
+                            src={proj.images[currentImageIndex]}
+                            alt={`${proj.title} - View ${currentImageIndex + 1}`}
+                            className="w-full h-full object-cover absolute inset-0"
+                            initial={{ opacity: 0, scale: 1.1 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.7, ease: "easeInOut" }}
+                          />
+                        </AnimatePresence>
+                      </div>
 
-                  color: "#1F2937"
-                }
-
-              ].map((proj, i) => (
-                <motion.div
-                  key={proj.title}
-                  className={`group border-2 overflow-hidden cursor-pointer transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
-                    }`}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: i * 0.2 }}
-                  whileHover={{ y: -8 }}
-                  onMouseEnter={() => setCursorVariant("hover")}
-                  onMouseLeave={() => setCursorVariant("default")}
-                >
-                  <div className="aspect-video overflow-hidden relative">
-                    <motion.div
-                      className="absolute inset-0 z-10 opacity-0 group-hover:opacity-20 transition-opacity"
-                      style={{ background: proj.color }}
-                    />
-                    <motion.img
-                      src={proj.img}
-                      alt={proj.title}
-                      className="w-full h-full object-cover"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.7 }}
-                    />
-                  </div>
-                  <div className="p-8">
-                    <h3 className="text-3xl font-bold mb-4">{proj.title}</h3>
-                    <p className="text-sm leading-relaxed mb-6 opacity-70">{proj.desc}</p>
-                    {proj.link && (
-                      <motion.a
-                        href={proj.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${darkMode ? 'bg-white text-black' : 'bg-black text-white'
-                          }`}
-                        whileHover={{ x: 5 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        View Live
-                        <ExternalLink className="h-4 w-4" />
-                      </motion.a>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
+                      {/* Image indicator dots */}
+                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+                        {proj.images.map((_, idx) => (
+                          <div
+                            key={idx}
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                              idx === currentImageIndex 
+                                ? darkMode ? 'bg-white w-6' : 'bg-black w-6'
+                                : darkMode ? 'bg-white bg-opacity-50' : 'bg-black bg-opacity-50'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="p-8">
+                      <h3 className="text-3xl font-bold mb-4">{proj.title}</h3>
+                      <p className="text-sm leading-relaxed mb-6 opacity-70">{proj.desc}</p>
+                      {proj.link && (
+                        <motion.a
+                          href={proj.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${darkMode ? 'bg-white text-black' : 'bg-black text-white'
+                            }`}
+                          whileHover={{ x: 5 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          View Live
+                          <ExternalLink className="h-4 w-4" />
+                        </motion.a>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
 
