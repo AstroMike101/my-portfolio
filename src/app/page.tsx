@@ -70,12 +70,11 @@ function Typewriter({
   return <span>{text}_</span>;
 }
 
-
 import Card from "@/components/Card";
 import RecentTracks from "@/components/RecentTracks";
 import PlacesSection from "@/components/PlacesSection";
 
-function SectionTitle({ kicker, title }: { kicker: string, title: string }) {
+function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   return (
     <div className="mb-12">
       <motion.p
@@ -100,7 +99,6 @@ function SectionTitle({ kicker, title }: { kicker: string, title: string }) {
   );
 }
 
-
 export default function HomePage() {
   const [currentSection, setCurrentSection] = useState("top");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -108,21 +106,19 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [darkMode, setDarkMode] = useState(false);
-  const [projectImageIndices, setProjectImageIndices] = useState<{ [key: string]: number }>({});
 
+  // Projects directory state
+  const [activeProject, setActiveProject] = useState<string>("barkada");
+  const [mobileExpandedProject, setMobileExpandedProject] = useState<string | null>(null);
+  const [previewImageIndex, setPreviewImageIndex] = useState(0);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
-
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
-
-
-
-
 
   useEffect(() => {
     const sectionIds = ["top", "about", "hobbies", "now", "projects", "PlacesSection", "contact"];
@@ -141,8 +137,6 @@ export default function HomePage() {
         if (probe >= top) active = id;
       }
       setCurrentSection(active);
-
-      // Calculate scroll progress
       const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
       const progress = (window.scrollY / windowHeight) * 100;
       setScrollProgress(progress);
@@ -156,6 +150,17 @@ export default function HomePage() {
     };
   }, []);
 
+  // Auto-cycle preview images
+  useEffect(() => {
+    setPreviewImageIndex(0);
+    const interval = setInterval(() => {
+      const proj = projects.find((p) => p.id === activeProject);
+      if (!proj) return;
+      setPreviewImageIndex((prev) => (prev + 1) % proj.images.length);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, [activeProject]);
+
   const hobbyCards = [
     { title: "Tennis", desc: "Weekend leagues, long rallies, and good company.", icon: Trophy, color: "#FF6B6B" },
     { title: "Music", desc: "Concerts, guitars, and discovering new artists on repeat.", icon: Music, color: "#4ECDC4" },
@@ -165,11 +170,14 @@ export default function HomePage() {
     { title: "Capturing", desc: "Snapping little vignettes of life & friends.", icon: Camera, color: "#AA96DA" },
   ];
 
-  // Project data with multiple images
   const projects = [
     {
       id: "barkada",
-      title: "Barkada Hospitality",
+      name: "barkada-hospitality/",
+      type: "FULLSTACK",
+      stack: ["Next.js", "Firebase", "Tailwind"],
+      year: "2026",
+      status: "LIVE",
       desc: "A full-stack reservation and payment platform designed for an Atlanta based sushi omakase experience. Built with Next.js, Tailwind CSS, and Firebase.",
       images: [
         "/images/barkad1.png",
@@ -177,56 +185,47 @@ export default function HomePage() {
         "/images/barkada3.png",
       ],
       link: "https://barkadahospitality.info",
-      color: "#1F2937"
     },
+        {
+      id: "atl-bootwatch",
+      name: "atl-bootwatch/",
+      type: "FULLSTACK",          // shown as a badge
+      stack: ["Next.js", "Supabase", "Tailwind", "Google Maps API"], // shown on project card
+      year: "2026",
+      status: "LIVE",              
+      desc: "A community-driven platform for Atlanta that tracks parking booting activity, highlights where it’s happening, and collects real user experiences to bring transparency to an issue many locals deal with.",
+      images: ["/images/boot1.png", "/images/boot2.png", "/images/boot3.png"],
+      link: "https://www.atlboot.watch/",        // or null if not deployed
+    },
+  {
+    id: "Billr",
+    name: "billr/",
+    type: "FULLSTACK",
+    stack: ["Swift", "SwiftUI", "Supabase", "RevenueCat"],
+    year: "2026",
+    status: "LIVE",
+    desc: "A clean, intuitive invoicing app built for freelancers and small businesses. Log hourly work, flat fees, and expenses, generate professional PDF invoices with your logo, and track what you're owed, all from your iPhone.",
+    images: ["/images/billr1.png"],
+    link: "https://apps.apple.com/us/app/billr-invoice-tracker/id6761347420",
+  },
     {
       id: "signature",
-      title: "Signature Studio",
-      desc: "An interactive web app for designing custom signatures with realistic, practice-ready styles. Using Next.js and opentype.js, it offers handwriting-based fonts, structural variations, and live previews for seamless customization.",
+      name: "signature-studio/",
+      type: "TOOL",
+      stack: ["Next.js", "opentype.js"],
+      year: "2025",
+      status: "LIVE",
+      desc: "An interactive web app for designing custom signatures with realistic, practice-ready styles. Offers handwriting-based fonts, structural variations, and live previews.",
       images: [
         "/images/sig1.png",
         "/images/sig2.png",
         "/images/sig3.png",
       ],
       link: "https://signature-studio-nine.vercel.app/",
-      color: "#1F2937"
-    }
+    },
   ];
 
-  // Auto-cycle project images - FIXED VERSION
-  useEffect(() => {
-    // Initialize all projects to index 0 first
-    const initialIndices: { [key: string]: number } = {};
-    projects.forEach((proj) => {
-      initialIndices[proj.id] = 0;
-    });
-    setProjectImageIndices(initialIndices);
-
-    // Start cycling after a small delay to ensure first image shows
-    const startTimeout = setTimeout(() => {
-      const intervals: { [key: string]: NodeJS.Timeout } = {};
-
-      projects.forEach((proj) => {
-        intervals[proj.id] = setInterval(() => {
-          setProjectImageIndices((prev) => ({
-            ...prev,
-            [proj.id]: ((prev[proj.id] || 0) + 1) % proj.images.length,
-          }));
-        }, 3000); // Change image every 3 seconds
-      });
-
-      // Store cleanup function for intervals
-      (window as any).__projectIntervals = intervals;
-    }, 100); // Small delay to ensure initial render
-
-    return () => {
-      clearTimeout(startTimeout);
-      // Clean up intervals on unmount
-      if ((window as any).__projectIntervals) {
-        Object.values((window as any).__projectIntervals).forEach((interval: any) => clearInterval(interval));
-      }
-    };
-  }, []);
+  const activeProj = projects.find((p) => p.id === activeProject) ?? projects[0];
 
   return (
     <>
@@ -239,16 +238,14 @@ export default function HomePage() {
         }
         
         body {
-          background: ${darkMode ? '#0a0a0a' : '#FAFAFA'};
+          background: ${darkMode ? "#0a0a0a" : "#FAFAFA"};
           transition: background 0.3s ease;
         }
         
         ::selection {
-          background: ${darkMode ? 'white' : 'black'};
-          color: ${darkMode ? 'black' : 'white'};
+          background: ${darkMode ? "white" : "black"};
+          color: ${darkMode ? "black" : "white"};
         }
-
-
 
         .terminal-text {
           color: #00ff00;
@@ -256,41 +253,32 @@ export default function HomePage() {
           font-family: 'Courier New', monospace;
         }
 
-       
-
-
-
-
         @media (max-width: 768px) {
-          * {
-            cursor: auto !important;
-          }
+          * { cursor: auto !important; }
         }
       `}</style>
-
-
-
 
       {/*
     <MatrixRain side="left" darkMode={darkMode} />
     <MatrixRain side="right" darkMode={darkMode} />
     */
 
-
-        <main className={`relative min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#0a0a0a] text-white' : 'bg-[#FAFAFA] text-black'}`} style={{ position: 'relative', zIndex: 2 }}>
+        <main
+          className={`relative min-h-screen transition-colors duration-300 ${darkMode ? "bg-[#0a0a0a] text-white" : "bg-[#FAFAFA] text-black"}`}
+          style={{ position: "relative", zIndex: 2 }}
+        >
           {/* Navigation */}
           <motion.nav
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className={`fixed top-0 left-0 right-0 z-50 border-b-2 backdrop-blur-sm transition-colors duration-300 ${darkMode
-                ? 'border-white bg-black bg-opacity-95'
-                : 'border-black bg-white md:bg-white bg-opacity-95 md:bg-opacity-100'
-              }`}
+            className={`fixed top-0 left-0 right-0 z-50 border-b-2 backdrop-blur-sm transition-colors duration-300 ${
+              darkMode
+                ? "border-white bg-black bg-opacity-95"
+                : "border-black bg-white md:bg-white bg-opacity-95 md:bg-opacity-100"
+            }`}
           >
-            {/* Progress bar */}
-            <div className={`absolute bottom-0 left-0 h-1 transition-all duration-150 ${darkMode ? 'bg-white' : 'bg-black'}`} style={{ width: `${scrollProgress}%` }} />
-
+            <div className={`absolute bottom-0 left-0 h-1 transition-all duration-150 ${darkMode ? "bg-white" : "bg-black"}`} style={{ width: `${scrollProgress}%` }} />
             <div className="mx-auto max-w-7xl px-6">
               <div className="flex items-center justify-between h-20">
                 <motion.a
@@ -304,7 +292,6 @@ export default function HomePage() {
                   MC
                 </motion.a>
 
-                {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-8">
                   {[
                     { href: "#about", label: "About" },
@@ -323,8 +310,9 @@ export default function HomePage() {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 * index, duration: 0.5 }}
-                        className={`text-sm font-bold uppercase tracking-wider transition-opacity cursor-pointer ${active ? "opacity-100" : "opacity-40 hover:opacity-100"
-                          }`}
+                        className={`text-sm font-bold uppercase tracking-wider transition-opacity cursor-pointer ${
+                          active ? "opacity-100" : "opacity-40 hover:opacity-100"
+                        }`}
                         onMouseEnter={() => setCursorVariant("hover")}
                         onMouseLeave={() => setCursorVariant("default")}
                       >
@@ -332,8 +320,6 @@ export default function HomePage() {
                       </motion.a>
                     );
                   })}
-
-                  {/* Dark Mode Toggle */}
                   <motion.button
                     onClick={() => setDarkMode(!darkMode)}
                     className="p-2 cursor-pointer"
@@ -347,9 +333,7 @@ export default function HomePage() {
                   </motion.button>
                 </div>
 
-                {/* Mobile Menu Button */}
                 <div className="flex md:hidden items-center gap-4">
-                  {/* Dark Mode Toggle Mobile */}
                   <motion.button
                     onClick={() => setDarkMode(!darkMode)}
                     className="p-2 cursor-pointer"
@@ -358,9 +342,8 @@ export default function HomePage() {
                   >
                     {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                   </motion.button>
-
                   <motion.button
-                    className={`cursor-pointer ${darkMode ? 'text-white' : 'text-black'}`}
+                    className={`cursor-pointer ${darkMode ? "text-white" : "text-black"}`}
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -369,7 +352,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Mobile Menu */}
               <AnimatePresence>
                 {mobileMenuOpen && (
                   <motion.div
@@ -377,7 +359,7 @@ export default function HomePage() {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className={`md:hidden overflow-hidden border-t-2 ${darkMode ? 'border-white' : 'border-black'}`}
+                    className={`md:hidden overflow-hidden border-t-2 ${darkMode ? "border-white" : "border-black"}`}
                   >
                     <div className="py-4 flex flex-col gap-4">
                       {[
@@ -395,8 +377,9 @@ export default function HomePage() {
                             key={n.href}
                             href={n.href}
                             onClick={() => setMobileMenuOpen(false)}
-                            className={`text-sm font-bold uppercase tracking-wider transition-opacity cursor-pointer py-2 ${active ? "opacity-100" : "opacity-40"
-                              }`}
+                            className={`text-sm font-bold uppercase tracking-wider transition-opacity cursor-pointer py-2 ${
+                              active ? "opacity-100" : "opacity-40"
+                            }`}
                           >
                             {n.label}
                           </a>
@@ -411,14 +394,11 @@ export default function HomePage() {
 
           {/* Hero */}
           <header id="top" className="mx-auto max-w-7xl px-6 pt-40 pb-32">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }}>
               <motion.div
-                className={`inline-flex items-center gap-2 text-sm font-mono mb-8 border-2 px-4 py-2 transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
-                  }`}
+                className={`inline-flex items-center gap-2 text-sm font-mono mb-8 border-2 px-4 py-2 transition-colors duration-300 ${
+                  darkMode ? "border-white bg-black" : "border-black bg-white"
+                }`}
                 initial={{ opacity: 0, scale: 0.8, y: -20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -428,57 +408,19 @@ export default function HomePage() {
               </motion.div>
 
               <div className="text-[8vw] md:text-[6rem] font-bold leading-[0.9] mb-8 tracking-tight">
-                <motion.div
-                  className="block overflow-hidden"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                >
-                  <motion.span
-                    className="block"
-                    initial={{ y: 100 }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  >
+                <motion.div className="block overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.5 }}>
+                  <motion.span className="block" initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}>
                     HI, I'M
                   </motion.span>
                 </motion.div>
-
-                <motion.div
-                  className="block overflow-hidden"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.8 }}
-                >
-                  <motion.span
-                    className="block"
-                    initial={{ y: 100 }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 1.2, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                  >
+                <motion.div className="block overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.8 }}>
+                  <motion.span className="block" initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1.2, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}>
                     MICHAEL—
                   </motion.span>
                 </motion.div>
-
-                <motion.div
-                  className="block overflow-hidden"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 1.1 }}
-                >
-                  <motion.span
-                    className="block terminal-text"
-                    initial={{ y: 100 }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 1.2, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <Typewriter
-                      words={["SOFTWARE ENGINEER", "PROBLEM SOLVER", "LIFELONG LEARNER"]}
-                      typeSpeed={70}
-                      deleteSpeed={50}
-                      delaySpeed={1000}
-                      startDelay={2000}
-                    />
+                <motion.div className="block overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 1.1 }}>
+                  <motion.span className="block terminal-text" initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1.2, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}>
+                    <Typewriter words={["SOFTWARE ENGINEER", "PROBLEM SOLVER", "LIFELONG LEARNER"]} typeSpeed={70} deleteSpeed={50} delaySpeed={1000} startDelay={2000} />
                   </motion.span>
                 </motion.div>
               </div>
@@ -500,8 +442,9 @@ export default function HomePage() {
               >
                 <motion.a
                   href="#contact"
-                  className={`group relative inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider overflow-hidden cursor-pointer transition-colors duration-300 ${darkMode ? 'bg-white text-black' : 'bg-black text-white'
-                    }`}
+                  className={`group relative inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider overflow-hidden cursor-pointer transition-colors duration-300 ${
+                    darkMode ? "bg-white text-black" : "bg-black text-white"
+                  }`}
                   onMouseEnter={() => setCursorVariant("hover")}
                   onMouseLeave={() => setCursorVariant("default")}
                   whileHover={{ scale: 1.05 }}
@@ -509,19 +452,13 @@ export default function HomePage() {
                 >
                   <span className="relative z-10">Say Hello</span>
                   <ArrowUpRight className="h-4 w-4 relative z-10 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                  <motion.div
-                    className="absolute inset-0 bg-[#FF6B6B]"
-                    initial={{ x: "-100%" }}
-                    whileHover={{ x: 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
+                  <motion.div className="absolute inset-0 bg-[#FF6B6B]" initial={{ x: "-100%" }} whileHover={{ x: 0 }} transition={{ duration: 0.3 }} />
                 </motion.a>
                 <motion.a
                   href="#about"
-                  className={`inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider border-2 transition-colors cursor-pointer ${darkMode
-                      ? 'border-white hover:bg-white hover:text-black'
-                      : 'border-black hover:bg-black hover:text-white'
-                    }`}
+                  className={`inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-wider border-2 transition-colors cursor-pointer ${
+                    darkMode ? "border-white hover:bg-white hover:text-black" : "border-black hover:bg-black hover:text-white"
+                  }`}
                   onMouseEnter={() => setCursorVariant("hover")}
                   onMouseLeave={() => setCursorVariant("default")}
                   whileHover={{ scale: 1.05 }}
@@ -538,8 +475,7 @@ export default function HomePage() {
             <SectionTitle kicker="About" title="Who I am" />
             <div className="grid gap-8 md:grid-cols-12">
               <motion.div
-                className={`md:col-span-7 border-2 p-12 cursor-pointer transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
-                  }`}
+                className={`md:col-span-7 border-2 p-12 cursor-pointer transition-colors duration-300 ${darkMode ? "border-white bg-black" : "border-black bg-white"}`}
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -556,7 +492,7 @@ export default function HomePage() {
                   {[
                     "Clean architecture, DX, and performance-minded code",
                     "Practical problem-solver and collaborative teammate",
-                    "Based in Atlanta, always open to new people and new experiences"
+                    "Based in Atlanta, always open to new people and new experiences",
                   ].map((text, i) => (
                     <motion.div
                       key={i}
@@ -574,8 +510,7 @@ export default function HomePage() {
               </motion.div>
 
               <motion.div
-                className={`md:col-span-5 border-2 p-12 cursor-pointer transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
-                  }`}
+                className={`md:col-span-5 border-2 p-12 cursor-pointer transition-colors duration-300 ${darkMode ? "border-white bg-black" : "border-black bg-white"}`}
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -589,8 +524,9 @@ export default function HomePage() {
                   {[".NET / C#", "SQL", "AWS", "Java", "REST APIs", "HTML/CSS/JS", "React", "Next.js", "Tailwind", "Vue.js", "Azure", "Firebase", "Git", "JUnit"].map((t, i) => (
                     <motion.span
                       key={t}
-                      className={`px-3 py-2 text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors duration-300 ${darkMode ? 'bg-white text-black' : 'bg-black text-white'
-                        }`}
+                      className={`px-3 py-2 text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors duration-300 ${
+                        darkMode ? "bg-white text-black" : "bg-black text-white"
+                      }`}
                       initial={{ opacity: 0, scale: 0 }}
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
@@ -617,21 +553,19 @@ export default function HomePage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   whileHover={{ y: -8 }}
-                  className={`group border-2 p-8 relative overflow-hidden cursor-pointer transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
-                    }`}
+                  className={`group border-2 p-8 relative overflow-hidden cursor-pointer transition-colors duration-300 ${
+                    darkMode ? "border-white bg-black" : "border-black bg-white"
+                  }`}
                   onMouseEnter={() => setCursorVariant("hover")}
                   onMouseLeave={() => setCursorVariant("default")}
                 >
-                  <motion.div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity"
-                    style={{ background: hobby.color }}
-                  />
+                  <motion.div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: hobby.color }} />
                   <div className="relative">
                     <div className="flex items-center justify-between mb-4">
                       <motion.div whileHover={{ rotate: 360, scale: 1.2 }} transition={{ duration: 0.6 }}>
                         <hobby.icon className="h-8 w-8" style={{ stroke: hobby.color }} strokeWidth={2} />
                       </motion.div>
-                      <div className="text-4xl font-bold opacity-10">{String(i + 1).padStart(2, '0')}</div>
+                      <div className="text-4xl font-bold opacity-10">{String(i + 1).padStart(2, "0")}</div>
                     </div>
                     <h3 className="text-2xl font-bold mb-2">{hobby.title}</h3>
                     <p className="text-sm leading-relaxed opacity-70">{hobby.desc}</p>
@@ -644,32 +578,17 @@ export default function HomePage() {
           {/* Now */}
           <section id="now" className="mx-auto max-w-7xl px-6 py-20">
             <SectionTitle kicker="Now" title="What I'm up to" />
-
             <div className="grid gap-6 md:grid-cols-3 mb-12">
               {[
-                {
-                  label: "Building",
-                  text: "established saas applications at work and fun projects at home",
-                  color: "#FF6B6B",
-                  icon: "🚀"
-                },
-                {
-                  label: "Learning",
-                  text: "exploring deeper systems topics and performance tuning",
-                  color: "#4ECDC4",
-                  icon: "📚"
-                },
-                {
-                  label: "Life",
-                  text: "weekly tennis, shows when good bands roll through, and mini trips out of ATL",
-                  color: "#FFE66D",
-                  icon: "✨"
-                }
+                { label: "Building", text: "established saas applications at work and fun projects at home", color: "#FF6B6B", icon: "🚀" },
+                { label: "Learning", text: "exploring deeper systems topics and performance tuning", color: "#4ECDC4", icon: "📚" },
+                { label: "Life", text: "weekly tennis, shows when good bands roll through, and mini trips out of ATL", color: "#FFE66D", icon: "✨" },
               ].map((item, i) => (
                 <motion.div
                   key={item.label}
-                  className={`border-2 p-8 relative overflow-hidden group cursor-pointer transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
-                    }`}
+                  className={`border-2 p-8 relative overflow-hidden group cursor-pointer transition-colors duration-300 ${
+                    darkMode ? "border-white bg-black" : "border-black bg-white"
+                  }`}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -678,26 +597,14 @@ export default function HomePage() {
                   onMouseEnter={() => setCursorVariant("hover")}
                   onMouseLeave={() => setCursorVariant("default")}
                 >
-                  <motion.div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity"
-                    style={{ background: item.color }}
-                  />
-
-                  <div className="text-5xl mb-4">
-                    {item.icon}
-                  </div>
-
+                  <motion.div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: item.color }} />
+                  <div className="text-5xl mb-4">{item.icon}</div>
                   <div>
-                    <h3 className="text-2xl font-bold mb-3" style={{ color: item.color }}>
-                      {item.label}
-                    </h3>
-                    <p className="text-base leading-relaxed opacity-80">
-                      {item.text}
-                    </p>
+                    <h3 className="text-2xl font-bold mb-3" style={{ color: item.color }}>{item.label}</h3>
+                    <p className="text-base leading-relaxed opacity-80">{item.text}</p>
                   </div>
-
                   <div
-                    className={`absolute top-4 right-4 w-12 h-12 rounded-full border-2 opacity-10 ${darkMode ? 'border-white' : 'border-black'}`}
+                    className={`absolute top-4 right-4 w-12 h-12 rounded-full border-2 opacity-10 ${darkMode ? "border-white" : "border-black"}`}
                     style={{ background: item.color }}
                   />
                 </motion.div>
@@ -723,87 +630,240 @@ export default function HomePage() {
             </motion.div>
           </section>
 
-          {/* Projects */}
+          {/* Projects — Directory Style */}
           <section id="projects" className="mx-auto max-w-7xl px-6 py-20">
             <SectionTitle kicker="Projects" title="Fun Projects" />
-            <div className="grid gap-8 md:grid-cols-2">
-              {projects.map((proj, i) => {
-                const currentImageIndex = projectImageIndices[proj.id] || 0;
-                
-                return (
-                  <motion.div
-                    key={proj.id}
-                    className={`group border-2 overflow-hidden cursor-pointer transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
-                      }`}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: i * 0.2 }}
-                    whileHover={{ y: -8 }}
-                    onMouseEnter={() => setCursorVariant("hover")}
-                    onMouseLeave={() => setCursorVariant("default")}
-                  >
-                    <div className="aspect-video overflow-hidden relative">
-                      <motion.div
-                        className="absolute inset-0 z-10 opacity-0 group-hover:opacity-20 transition-opacity"
-                        style={{ background: proj.color }}
-                      />
-                      
-                      {/* Auto-cycling images with smooth crossfade */}
-                      <div className="relative w-full h-full">
-                        <AnimatePresence mode="wait">
-                          <motion.img
-                            key={currentImageIndex}
-                            src={proj.images[currentImageIndex]}
-                            alt={`${proj.title} - View ${currentImageIndex + 1}`}
-                            className="w-full h-full object-cover absolute inset-0"
-                            initial={{ opacity: 0, scale: 1.1 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.7, ease: "easeInOut" }}
-                          />
-                        </AnimatePresence>
-                      </div>
 
-                      {/* Image indicator dots */}
-                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
-                        {proj.images.map((_, idx) => (
-                          <div
-                            key={idx}
-                            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                              idx === currentImageIndex 
-                                ? darkMode ? 'bg-white w-6' : 'bg-black w-6'
-                                : darkMode ? 'bg-white bg-opacity-50' : 'bg-black bg-opacity-50'
-                            }`}
-                          />
-                        ))}
+            {/* ── DESKTOP: two-panel directory ── */}
+            <motion.div
+              className="hidden md:flex"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              {/* Left — file list */}
+              <div className={`w-2/5 border-2 flex flex-col font-mono transition-colors duration-300 ${darkMode ? "border-white bg-black" : "border-black bg-white"}`}>
+                {/* Terminal bar */}
+                <div className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>
+                  <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+                  <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+                  <span className="w-3 h-3 rounded-full bg-[#28C840]" />
+                  <span className={`text-xs ml-3 opacity-50`}>~/michael/projects</span>
+                </div>
+
+                {/* Row count */}
+                <div className={`px-4 py-2 text-xs opacity-40 border-b transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>
+                  drwxr-xr-x &nbsp; {projects.length} items
+                </div>
+
+                {/* Project rows */}
+                {projects.map((proj, i) => {
+                  const isActive = activeProject === proj.id;
+                  return (
+                    <motion.button
+                      key={proj.id}
+                      onClick={() => { setActiveProject(proj.id); setPreviewImageIndex(0); }}
+                      className={`w-full text-left px-4 py-5 border-b last:border-b-0 flex items-center gap-3 transition-all duration-200 group ${
+                        darkMode ? "border-white" : "border-black"
+                      } ${isActive ? (darkMode ? "bg-white text-black" : "bg-black text-white") : "hover:opacity-70"}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.08, duration: 0.4 }}
+                    >
+                      <span className="text-xs opacity-50 w-3">{isActive ? "▶" : " "}</span>
+                      <span className="flex-1 text-sm font-bold truncate">{proj.name}</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`text-xs px-2 py-0.5 font-bold border ${
+                          isActive
+                            ? darkMode ? "border-black" : "border-white"
+                            : darkMode ? "border-white" : "border-black"
+                        }`}>
+                          {proj.status}
+                        </span>
+                        <span className="text-xs opacity-50">{proj.year}</span>
                       </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Right — preview panel */}
+              <div className={`w-3/5 border-2 border-l-0 flex flex-col transition-colors duration-300 ${darkMode ? "border-white bg-black" : "border-black bg-white"}`}>
+                {/* Preview header */}
+                <div className={`flex items-center justify-between px-6 py-3 border-b-2 transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>
+                  <span className="font-mono text-xs opacity-50">{activeProj.name}</span>
+                  <div className="flex gap-2">
+                    {activeProj.stack.map((t) => (
+                      <span key={t} className={`text-xs px-2 py-0.5 font-bold border transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>{t}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Image cycling */}
+                <div className="relative aspect-video overflow-hidden border-b-2 transition-colors duration-300" style={{ borderColor: darkMode ? "white" : "black" }}>
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={`${activeProject}-${previewImageIndex}`}
+                      src={activeProj.images[previewImageIndex]}
+                      alt={`${activeProj.name} preview`}
+                      className="w-full h-full object-cover absolute inset-0"
+                      initial={{ opacity: 0, scale: 1.04 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.97 }}
+                      transition={{ duration: 0.55, ease: "easeInOut" }}
+                    />
+                  </AnimatePresence>
+
+                  {/* Image dots */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                    {activeProj.images.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setPreviewImageIndex(idx)}
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          idx === previewImageIndex
+                            ? darkMode ? "bg-white w-6" : "bg-black w-6"
+                            : darkMode ? "bg-white opacity-40 w-2" : "bg-black opacity-40 w-2"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Description + link */}
+                <div className="p-6 flex flex-col gap-4 flex-1 justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className={`text-xs font-bold font-mono px-2 py-0.5 border transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>
+                        {activeProj.type}
+                      </span>
                     </div>
-                    <div className="p-8">
-                      <h3 className="text-3xl font-bold mb-4">{proj.title}</h3>
-                      <p className="text-sm leading-relaxed mb-6 opacity-70">{proj.desc}</p>
-                      {proj.link && (
-                        <motion.a
-                          href={proj.link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${darkMode ? 'bg-white text-black' : 'bg-black text-white'
-                            }`}
-                          whileHover={{ x: 5 }}
-                          whileTap={{ scale: 0.95 }}
+                    <p className="text-sm leading-relaxed opacity-70">{activeProj.desc}</p>
+                  </div>
+                  {activeProj.link && (
+                    <motion.a
+                      href={activeProj.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider self-start transition-colors duration-300 ${
+                        darkMode ? "bg-white text-black" : "bg-black text-white"
+                      }`}
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      View Live
+                      <ExternalLink className="h-4 w-4" />
+                    </motion.a>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* ── MOBILE: accordion list ── */}
+            <motion.div
+              className={`md:hidden border-2 font-mono transition-colors duration-300 ${darkMode ? "border-white bg-black" : "border-black bg-white"}`}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              {/* Terminal bar */}
+              <div className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>
+                <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+                <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+                <span className="w-3 h-3 rounded-full bg-[#28C840]" />
+                <span className="text-xs ml-3 opacity-50">~/michael/projects</span>
+              </div>
+
+              {projects.map((proj, i) => {
+                const isOpen = mobileExpandedProject === proj.id;
+                return (
+                  <div key={proj.id} className={`border-b last:border-b-0 transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>
+                    {/* Row */}
+                    <button
+                      onClick={() => setMobileExpandedProject(isOpen ? null : proj.id)}
+                      className="w-full text-left px-4 py-4 flex items-center gap-3"
+                    >
+                      <span className={`text-xs transition-transform duration-200 ${isOpen ? "rotate-90" : ""} opacity-50`}>▶</span>
+                      <span className="flex-1 text-sm font-bold truncate">{proj.name}</span>
+                      <span className={`text-xs px-2 py-0.5 font-bold border transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>
+                        {proj.status}
+                      </span>
+                      <span className="text-xs opacity-40 ml-1">{proj.year}</span>
+                    </button>
+
+                    {/* Expanded */}
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className={`overflow-hidden border-t transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}
                         >
-                          View Live
-                          <ExternalLink className="h-4 w-4" />
-                        </motion.a>
+                          {/* Images */}
+                          <div className="relative aspect-video overflow-hidden">
+                            <AnimatePresence mode="wait">
+                              <motion.img
+                                key={`mob-${proj.id}-${previewImageIndex}`}
+                                src={proj.images[previewImageIndex] ?? proj.images[0]}
+                                alt={proj.name}
+                                className="w-full h-full object-cover absolute inset-0"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.4 }}
+                              />
+                            </AnimatePresence>
+                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                              {proj.images.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setPreviewImageIndex(idx)}
+                                  className={`h-2 rounded-full transition-all duration-300 ${
+                                    idx === previewImageIndex
+                                      ? darkMode ? "bg-white w-6" : "bg-black w-6"
+                                      : darkMode ? "bg-white opacity-40 w-2" : "bg-black opacity-40 w-2"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Info */}
+                          <div className="p-5 font-sans">
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {proj.stack.map((t) => (
+                                <span key={t} className={`text-xs px-2 py-0.5 font-bold border font-mono transition-colors duration-300 ${darkMode ? "border-white" : "border-black"}`}>{t}</span>
+                              ))}
+                            </div>
+                            <p className="text-sm leading-relaxed opacity-70 mb-4">{proj.desc}</p>
+                            {proj.link && (
+                              <a
+                                href={proj.link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-colors duration-300 ${
+                                  darkMode ? "bg-white text-black" : "bg-black text-white"
+                                }`}
+                              >
+                                View Live <ExternalLink className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                        </motion.div>
                       )}
-                    </div>
-                  </motion.div>
+                    </AnimatePresence>
+                  </div>
                 );
               })}
-            </div>
+            </motion.div>
           </section>
 
-          <section id='PlacesSection'>
+          <section id="PlacesSection">
             <div className="mx-auto max-w-7xl px-6">
               <PlacesSection darkMode={darkMode} />
             </div>
@@ -812,27 +872,27 @@ export default function HomePage() {
           {/* Contact */}
           <section id="contact" className="mx-auto max-w-7xl px-6 py-20">
             <SectionTitle kicker="Contact" title="Let's connect" />
-            <div className={`border-2 p-12 transition-colors duration-300 ${darkMode ? 'border-white bg-black' : 'border-black bg-white'
-              }`}>
+            <div className={`border-2 p-12 transition-colors duration-300 ${darkMode ? "border-white bg-black" : "border-black bg-white"}`}>
               <div className="flex flex-wrap gap-4">
                 {[
                   { href: "https://www.linkedin.com/in/michael-chen880/", icon: Linkedin, label: "LinkedIn", external: true },
                   { href: "mailto:michaelchendevs@gmail.com", icon: Mail, label: "Email Me", primary: true },
-                  { href: "/MichaelChenResume.pdf", icon: null, label: "📄 Resume", external: true }
-                ].map((link, i) => (
+                  { href: "/MichaelChenResume.pdf", icon: null, label: "📄 Resume", external: true },
+                ].map((link) => (
                   <a
                     key={link.label}
                     href={link.href}
                     target={link.external ? "_blank" : undefined}
                     rel={link.external ? "noreferrer" : undefined}
-                    className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${link.primary
+                    className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                      link.primary
                         ? darkMode
                           ? "bg-white text-black hover:bg-opacity-80"
                           : "bg-black text-white hover:bg-opacity-80"
                         : darkMode
-                          ? "border-2 border-white hover:bg-white hover:text-black"
-                          : "border-2 border-black hover:bg-black hover:text-white"
-                      }`}
+                        ? "border-2 border-white hover:bg-white hover:text-black"
+                        : "border-2 border-black hover:bg-black hover:text-white"
+                    }`}
                     onMouseEnter={() => setCursorVariant("hover")}
                     onMouseLeave={() => setCursorVariant("default")}
                   >
@@ -842,7 +902,6 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-
             <div className="mt-12 text-center font-mono text-sm opacity-50">
               <p>© {new Date().getFullYear()} MICHAEL CHEN</p>
             </div>
