@@ -864,7 +864,10 @@ export default function HomePage() {
           </section>
 
           <section id="PlacesSection">
-            <div className="mx-auto max-w-7xl px-6">
+            
+            <div className="mx-auto max-w-7xl px-6 py-20">
+                          <SectionTitle kicker="Travel" title="Places I've explored" />
+
               <PlacesSection darkMode={darkMode} />
             </div>
           </section>
