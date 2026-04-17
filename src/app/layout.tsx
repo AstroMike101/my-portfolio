@@ -24,7 +24,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "https://michaelchen.live/images/og-image.png", // 
+        url: "https://michaelchen.live/images/og-image1.png", // 
         width: 1200,
         height: 630,
         alt: "Michael Chen - Software Engineer Portfolio",
