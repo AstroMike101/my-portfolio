@@ -1,474 +1,253 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useRef, useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Card from "@/components/Card";
-import SectionTitle from "@/components/SectionTitle";
-import { places, Place } from "@/data/places";
-import { X, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { places } from "@/data/places";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 
-const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
-
+/**
+ * PlacesSection v3 — no globe, polaroid/photograph frame layout.
+ * No internal title or Card wrapper — parent controls that.
+ */
 export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
-  
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [expanded, setExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  const globeRef = useRef<any>(null);
-  const modalGlobeRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const [dims, setDims] = useState({ width: 0, height: 0 });
-  const [globeReady, setGlobeReady] = useState(false);
-
   const currentPlace = places[currentIndex];
-
-  // Start centered on US
-  const US_VIEW = { lat: 39.8283, lng: -98.5795, altitude: 2.5 };
-
-  // Minimum swipe distance
   const minSwipeDistance = 50;
 
-  // Touch handlers for swipe
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
+  const onTouchStart = (e: React.TouchEvent) => { setTouchEnd(null); setTouchStart(e.targetTouches[0].clientX); };
+  const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    
-    if (isLeftSwipe) {
-      nextPlace();
-    }
-    if (isRightSwipe) {
-      prevPlace();
-    }
+    const d = touchStart - touchEnd;
+    if (d > minSwipeDistance) nextPlace();
+    if (d < -minSwipeDistance) prevPlace();
   };
 
-  // Resize observer
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      setDims({ width, height });
-    });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  // Initialize globe to US
-  useEffect(() => {
-    if (!globeRef.current || !globeReady) return;
-
-    const setView = () => {
-      try {
-        globeRef.current.pointOfView(US_VIEW, 0);
-        const controls = globeRef.current.controls?.();
-        if (controls) {
-          controls.autoRotate = false;
-          controls.enableZoom = false;
-          controls.enablePan = false;
-          controls.enableRotate = true;
-          controls.update?.();
-        }
-      } catch (e) {
-        console.log('Globe not ready');
-      }
-    };
-
-    setView();
-    const t1 = setTimeout(setView, 100);
-    const t2 = setTimeout(setView, 300);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [globeReady, dims]);
-
-  // When current place changes, animate globe to that location
-  useEffect(() => {
-    if (!globeRef.current || !currentPlace) return;
-
-    const timer = setTimeout(() => {
-      globeRef.current.pointOfView(
-        {
-          lat: currentPlace.coords[0],
-          lng: currentPlace.coords[1],
-          altitude: 1.8
-        },
-        1500
-      );
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [currentIndex, currentPlace]);
-
-  const nextPlace = () => {
+  const go = (idx: number) => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setCurrentIndex((prev) => (prev + 1) % places.length);
+    setCurrentIndex(idx);
     setTimeout(() => setIsAnimating(false), 400);
   };
 
-  const prevPlace = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setCurrentIndex((prev) => (prev - 1 + places.length) % places.length);
-    setTimeout(() => setIsAnimating(false), 400);
-  };
+  const nextPlace = () => go((currentIndex + 1) % places.length);
+  const prevPlace = () => go((currentIndex - 1 + places.length) % places.length);
 
-  // Get only the current place as a pin
-  const currentPlaceData = [currentPlace];
-
-  // Custom pin rendering with HTML marker
-  const getHtmlElement = () => {
-    const el = document.createElement('div');
-    el.innerHTML = `
-      <div style="position: relative; width: 40px; height: 40px;">
-        <div style="
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 16px;
-          height: 16px;
-          background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-          border-radius: 50%;
-          box-shadow: 0 0 20px rgba(16, 185, 129, 0.8), 0 0 40px rgba(16, 185, 129, 0.4);
-          animation: pulse 2s ease-in-out infinite;
-        "></div>
-        <div style="
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 30px;
-          height: 30px;
-          background: radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%);
-          border-radius: 50%;
-          animation: ripple 2s ease-out infinite;
-        "></div>
-      </div>
-      <style>
-        @keyframes pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          50% { transform: translate(-50%, -50%) scale(1.2); }
-        }
-        @keyframes ripple {
-          0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
-          100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
-        }
-      </style>
-    `;
-    return el;
-  };
-
-  // Modal globe
-  useEffect(() => {
-    if (expanded && modalGlobeRef.current) {
-      const g = modalGlobeRef.current;
-      setTimeout(() => {
-        g.pointOfView(
-          {
-            lat: currentPlace.coords[0],
-            lng: currentPlace.coords[1],
-            altitude: 1.8
-          },
-          0
-        );
-        const controls = g.controls?.();
-        if (controls) {
-          controls.autoRotate = true;
-          controls.autoRotateSpeed = 0.5;
-          controls.update?.();
-        }
-      }, 100);
-    }
-  }, [expanded, currentPlace]);
+  const ArrowBtn = ({ onClick, disabled, children }: { onClick: () => void; disabled: boolean; children: React.ReactNode }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: 42, height: 42, borderRadius: "50%",
+        background: "#0a0a0f", border: "2.5px solid #ffe66d",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: "pointer", boxShadow: "3px 3px 0 #ffe66d",
+        opacity: disabled ? 0.4 : 1, transition: "opacity .2s, transform .1s",
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </button>
+  );
 
   return (
-    <section id="places" className="mx-auto max-w-6xl px-4 sm:px-6 py-12">
-<SectionTitle kicker="Travel" title="Places I've explored" darkMode={darkMode} />
-      <p className="text-center text-sm text-slate-400 -mt-4 mb-8 italic">all photos taken by me :D</p>
+    <>
+      <p style={{ fontSize: 12, fontWeight: 700, fontStyle: "italic", opacity: .45, marginBottom: 20 }}>
+        all photos taken by me :D
+      </p>
 
-      {/* Main carousel layout */}
-      <div className="relative">
-        <Card className="overflow-hidden">
-          <div className="grid lg:grid-cols-2 gap-0">
-            {/* Left: Image with navigation */}
-            <div 
-              className="relative h-[450px] sm:h-[500px] lg:h-[600px]"
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
+      {/* ── DESKTOP ── */}
+      <div className="hidden md:grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 36, alignItems: "center" }}>
+
+        {/* Polaroid frame */}
+        <div style={{ position: "relative" }}>
+          <div style={{
+            background: "#fff", padding: "12px 12px 52px",
+            border: "3px solid #0a0a0f", boxShadow: "7px 7px 0 #0a0a0f",
+            transform: "rotate(-1.5deg)", position: "relative",
+          }}>
+            <div
+              style={{ position: "relative", overflow: "hidden", aspectRatio: "4/3" }}
+              onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
             >
               <AnimatePresence mode="wait">
-                <motion.div
+                <motion.img
                   key={currentIndex}
-                  initial={{ opacity: 0, scale: 1.1 }}
+                  src={currentPlace.img}
+                  alt={currentPlace.name}
+                  initial={{ opacity: 0, scale: 1.04 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute inset-0"
-                >
-                  <img
-                    src={currentPlace.img}
-                    alt={currentPlace.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Navigation overlays - hidden on small mobile, visible on tablet+ */}
-              <div className="hidden sm:flex absolute inset-0 items-center justify-between px-4">
-                <button
-                  onClick={prevPlace}
-                  disabled={isAnimating}
-                  className="w-11 h-11 lg:w-12 lg:h-12 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center hover:bg-white hover:scale-110 transition-all disabled:opacity-50"
-                >
-                  <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6 text-slate-800" />
-                </button>
-                <button
-                  onClick={nextPlace}
-                  disabled={isAnimating}
-                  className="w-11 h-11 lg:w-12 lg:h-12 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center hover:bg-white hover:scale-110 transition-all disabled:opacity-50"
-                >
-                  <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6 text-slate-800" />
-                </button>
-              </div>
-
-              {/* Bottom info overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                <motion.div
-                  key={`info-${currentIndex}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
-                      <MapPin className="w-3 h-3 text-white" />
-                      <span className="text-xs text-white font-medium">
-                        {currentPlace.coords[0].toFixed(2)}°, {currentPlace.coords[1].toFixed(2)}°
-                      </span>
-                    </div>
-                    <div className="px-3 py-1 rounded-full bg-emerald-500/80 backdrop-blur-md text-white text-xs font-medium">
-                      {currentIndex + 1} of {places.length}
-                    </div>
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                    {currentPlace.name}
-                  </h3>
-                  {/* Show description on mobile only */}
-                  <p className="lg:hidden text-sm sm:text-base text-white/90 leading-relaxed line-clamp-3">
-                    {currentPlace.desc}
-                  </p>
-                </motion.div>
-              </div>
-            </div>
-
-            {/* Right: Globe + Description - hidden on mobile, visible on desktop */}
-            <div className="hidden lg:flex flex-col p-6 lg:p-8 gap-6">
-              {/* Globe */}
-              <div
-                ref={containerRef}
-                className="relative h-[300px] flex items-center justify-center rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden"
-              >
-                <Globe
-                  ref={globeRef}
-                  width={dims.width || 400}
-                  height={300}
-                  globeImageUrl="https://unpkg.com/three-globe/example/img/earth-day.jpg"
-                  bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
-                  backgroundColor="rgba(0,0,0,0)"
-                  showAtmosphere
-                  atmosphereColor="rgba(16, 185, 129, 0.3)"
-                  atmosphereAltitude={0.15}
-                  enablePointerInteraction={true}
-                  htmlElementsData={currentPlaceData}
-                  htmlLat={(d) => (d as Place).coords[0]}
-                  htmlLng={(d) => (d as Place).coords[1]}
-                  htmlElement={getHtmlElement}
-                  onGlobeReady={() => setGlobeReady(true)}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.45 }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, display: "block" }}
                 />
+              </AnimatePresence>
+            </div>
 
-                <button
-                  onClick={() => setExpanded(true)}
-                  className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg bg-white/90 backdrop-blur-sm text-xs font-medium text-slate-700 shadow hover:bg-white transition-all"
-                >
-                  Expand Globe
-                </button>
+            {/* Badge inside image — always readable */}
+              <div style={{
+                position: "absolute", top: 10, right: 10, zIndex: 10,
+                background: "#0a0a0f", border: "2px solid #ffe66d",
+                color: "#ffe66d", fontSize: 11, fontWeight: 900,
+                padding: "3px 10px", boxShadow: "2px 2px 0 #ffe66d",
+              }}>
+                {currentIndex + 1} / {places.length}
               </div>
 
-              {/* Description */}
-              <div className="flex-1 flex flex-col">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`desc-${currentIndex}`}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.4 }}
-                    className="flex-1"
-                  >
-                    <p className="text-slate-600 leading-relaxed text-base lg:text-lg">
-                      {currentPlace.desc}
-                    </p>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Dot indicators */}
-                <div className="flex items-center justify-center gap-2 mt-6">
-                  {places.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        if (!isAnimating) {
-                          setIsAnimating(true);
-                          setCurrentIndex(idx);
-                          setTimeout(() => setIsAnimating(false), 400);
-                        }
-                      }}
-                      className={`h-2 rounded-full transition-all ${
-                        idx === currentIndex
-                          ? 'w-8 bg-gradient-to-r from-emerald-500 to-teal-500'
-                          : 'w-2 bg-slate-300 hover:bg-slate-400'
-                      }`}
-                    />
-                  ))}
-                </div>
+            {/* Caption strip */}
+            <div style={{ paddingTop: 12, textAlign: "center" }}>
+              <div style={{ fontFamily: "'Courier New', monospace", fontSize: 14, fontWeight: 700, color: "#0a0a0f", letterSpacing: ".04em" }}>
+                {currentPlace.name}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 4, opacity: .5 }}>
+                <MapPin size={11} color="#0a0a0f" />
+                <span style={{ fontFamily: "monospace", fontSize: 10, color: "#0a0a0f" }}>
+                  {currentPlace.coords[0].toFixed(2)}°, {currentPlace.coords[1].toFixed(2)}°
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Mobile navigation buttons at bottom */}
-          <div className="sm:hidden flex items-center justify-center gap-3 p-4 border-t border-slate-100">
-            <button
-              onClick={prevPlace}
-              disabled={isAnimating}
-              className="flex-1 max-w-[140px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-200 flex items-center justify-center gap-2 font-medium text-slate-700 shadow-sm hover:shadow transition-all disabled:opacity-50"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Previous
-            </button>
-            <button
-              onClick={nextPlace}
-              disabled={isAnimating}
-              className="flex-1 max-w-[140px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center gap-2 font-medium text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-            >
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </button>
+        </div>
+
+        {/* Right panel: arrows row + description + dots */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* Arrow row at top */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <ArrowBtn onClick={prevPlace} disabled={isAnimating}><ChevronLeft size={20} color="#ffe66d" /></ArrowBtn>
+            <ArrowBtn onClick={nextPlace} disabled={isAnimating}><ChevronRight size={20} color="#ffe66d" /></ArrowBtn>
+            <span style={{ fontSize: 12, fontWeight: 700, opacity: .45, fontFamily: "monospace" }}>
+              swipe or click to navigate
+            </span>
           </div>
 
-          {/* Mobile dot indicators */}
-          <div className="lg:hidden flex items-center justify-center gap-2 pb-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`desc-${currentIndex}`}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.35 }}
+            >
+              <h3 style={{ fontSize: 22, fontWeight: 900, marginBottom: 10, color: "#0a0a0f" }}>
+                {currentPlace.name}
+              </h3>
+              <p style={{ fontSize: 14, lineHeight: 1.75, color: "rgba(10,10,15,.65)" }}>
+                {currentPlace.desc}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Dot nav */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {places.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => {
-                  if (!isAnimating) {
-                    setIsAnimating(true);
-                    setCurrentIndex(idx);
-                    setTimeout(() => setIsAnimating(false), 400);
-                  }
+                onClick={() => go(idx)}
+                style={{
+                  height: 8, width: idx === currentIndex ? 28 : 8,
+                  borderRadius: 4, border: "none", cursor: "pointer",
+                  background: idx === currentIndex ? "#ff3e5c" : "rgba(10,10,15,.2)",
+                  boxShadow: idx === currentIndex ? "2px 2px 0 #0a0a0f" : "none",
+                  transition: "all .25s",
                 }}
-                className={`h-2 rounded-full transition-all ${
-                  idx === currentIndex
-                    ? 'w-8 bg-gradient-to-r from-emerald-500 to-teal-500'
-                    : 'w-2 bg-slate-300 active:bg-slate-400'
-                }`}
               />
             ))}
           </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Fullscreen Globe Modal */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="relative w-full h-full flex items-center justify-center">
-              <Globe
-                ref={modalGlobeRef}
-                globeImageUrl="https://unpkg.com/three-globe/example/img/earth-day.jpg"
-                bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
-                backgroundColor="rgba(0,0,0,0)"
-                width={typeof window !== 'undefined' ? window.innerWidth : 800}
-                height={typeof window !== 'undefined' ? window.innerHeight : 600}
-                showAtmosphere
-                atmosphereColor="rgba(16, 185, 129, 0.3)"
-                atmosphereAltitude={0.2}
-                htmlElementsData={currentPlaceData}
-                htmlLat={(d) => (d as Place).coords[0]}
-                htmlLng={(d) => (d as Place).coords[1]}
-                htmlElement={getHtmlElement}
+      {/* ── MOBILE ── */}
+      <div className="md:hidden" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+
+        {/* Polaroid */}
+        <div style={{
+          background: "#fff", padding: "10px 10px 46px",
+          border: "3px solid #0a0a0f", boxShadow: "5px 5px 0 #0a0a0f",
+          transform: "rotate(-1deg)", marginBottom: 20, position: "relative",
+        }}>
+          <div style={{ position: "relative", overflow: "hidden", aspectRatio: "4/3" }}>
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={`mob-${currentIndex}`}
+                src={currentPlace.img}
+                alt={currentPlace.name}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35 }}
+                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0, display: "block" }}
               />
-
-              <button
-                onClick={() => setExpanded(false)}
-                className="absolute top-4 right-4 sm:top-6 sm:right-6 rounded-full bg-white/90 backdrop-blur-md p-2.5 sm:p-3 hover:bg-white shadow-lg hover:shadow-xl transition-all duration-300 group"
-              >
-                <X className="h-5 w-5 sm:h-6 sm:w-6 text-slate-700 group-hover:text-slate-900 transition-colors" />
-              </button>
-
-              {/* Modal info */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="absolute bottom-4 sm:bottom-8 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-2xl"
-              >
-                <div className="glass rounded-2xl p-4 sm:p-6 shadow-2xl border border-white/20">
-                  <div className="flex items-start justify-between gap-3 sm:gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg sm:text-2xl font-bold text-slate-800 mb-2">
-                        {currentPlace.name}
-                      </h3>
-                      <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-                        {currentPlace.desc}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <button
-                        onClick={prevPlace}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition-all"
-                      >
-                        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
-                      </button>
-                      <button
-                        onClick={nextPlace}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition-all"
-                      >
-                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+            </AnimatePresence>
+            <div style={{
+              position: "absolute", top: 10, right: 10, zIndex: 10,
+              background: "#0a0a0f", border: "2px solid #ffe66d",
+              color: "#ffe66d", fontSize: 10, fontWeight: 900,
+              padding: "2px 8px", boxShadow: "2px 2px 0 #ffe66d",
+            }}>
+              {currentIndex + 1} / {places.length}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </section>
+          </div>
+          <div style={{ paddingTop: 10, textAlign: "center" }}>
+            <div style={{ fontFamily: "'Courier New', monospace", fontSize: 13, fontWeight: 700, color: "#0a0a0f" }}>
+              {currentPlace.name}
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={`mob-desc-${currentIndex}`}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(10,10,15,.65)", marginBottom: 18 }}
+          >
+            {currentPlace.desc}
+          </motion.p>
+        </AnimatePresence>
+
+        {/* Both nav buttons — identical Memphis style */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+          {[{ label: "← Prev", fn: prevPlace }, { label: "Next →", fn: nextPlace }].map((b) => (
+            <button
+              key={b.label}
+              onClick={b.fn}
+              disabled={isAnimating}
+              style={{
+                flex: 1, padding: "11px 0", fontWeight: 900, fontSize: 13,
+                background: "#ffe66d", border: "2px solid #0a0a0f",
+                color: "#0a0a0f", cursor: "pointer", fontFamily: "inherit",
+                boxShadow: "3px 3px 0 #0a0a0f",
+                opacity: isAnimating ? 0.5 : 1, transition: "opacity .2s",
+              }}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Dots */}
+        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+          {places.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => go(idx)}
+              style={{
+                height: 8, width: idx === currentIndex ? 24 : 8,
+                borderRadius: 4, border: "none", cursor: "pointer",
+                background: idx === currentIndex ? "#ff3e5c" : "rgba(10,10,15,.2)",
+                transition: "all .25s",
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
