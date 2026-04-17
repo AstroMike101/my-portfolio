@@ -33,7 +33,7 @@ const PROJECTS = [
   },
   {
     id: "billr", num: "03", name: "Billr", year: "2026", status: "LIVE",
-    type: "FULLSTACK", stack: ["Swift", "SwiftUI", "Supabase", "RevenueCat"],
+    type: "IOS", stack: ["Swift", "SwiftUI", "Supabase", "RevenueCat"],
     desc: "A clean, intuitive invoicing app built for freelancers and small businesses. Log hourly work, flat fees, and expenses, generate professional PDF invoices with your logo, and track what you're owed, all from your iPhone.",
     images: ["/images/billr1.png"],
     link: "https://apps.apple.com/us/app/billr-invoice-tracker/id6761347420",
