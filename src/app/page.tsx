@@ -49,28 +49,28 @@ const PROJECTS = [
   {
     name: "Barkada Hospitality",
     href: "https://barkadahospitality.info",
-    link: "barkadahospitality.info ↗",
+    link: "barkadahospitality.info",
     desc: "Full-stack reservation and payment platform for an Atlanta sushi omakase experience. Real-time seat availability via Firestore, non-refundable deposits via Square Payments.",
     tags: ["Next.js", "Firebase", "Square API", "Tailwind"],
   },
   {
     name: "ATL BootWatch",
     href: "https://www.atlboot.watch/",
-    link: "atlboot.watch ↗",
+    link: "atlboot.watch",
     desc: "Community-driven platform tracking parking boot activity across Atlanta. Users report incidents on a live map to bring transparency to a problem most locals deal with weekly.",
     tags: ["Next.js", "Supabase", "Google Maps API", "Tailwind"],
   },
   {
     name: "Billr",
     href: "https://apps.apple.com/us/app/billr-invoice-tracker/id6761347420",
-    link: "App Store ↗",
+    link: "App Store",
     desc: "iOS invoicing app for freelancers and small businesses. Log hours, flat fees, and expenses — generate PDF invoices with your logo and track what you're owed from your iPhone.",
     tags: ["Swift", "SwiftUI", "Supabase", "RevenueCat"],
   },
   {
     name: "Signature Studio",
     href: "https://signature-studio-nine.vercel.app/",
-    link: "signature-studio ↗",
+    link: "signature-studio",
     desc: "Interactive tool for designing custom signatures. Handwriting-based fonts, structural variations, and live previews powered by opentype.js.",
     tags: ["Next.js", "opentype.js", "Tailwind"],
   },
@@ -78,12 +78,12 @@ const PROJECTS = [
 
 const SIDEQUESTS = [
   { label: "Tennis",     text: "Seasonal leagues, long rallies, consistency, and good company." },
-  { label: "Sports",     text: "Basketball weekly, lifting 3–4x a week. Sport is how I decompress — competitive enough to keep it interesting, consistent enough that it's just part of the routine." },
+  { label: "Sports",     text: "Basketball weekly, lifting 3–4x a week. Sport is how I decompress." },
   { label: "Music",      text: "Concerts, guitars, and discovering new artists on repeat. There's always something playing whether I'm cooking, commuting, cleaning, or just straight up laying in bed." },
   { label: "Film",       text: "A fan of films with subtext, ambiguity, and enough restraint to let the audience connect the dots." },
   { label: "Outdoors",   text: "Hikes, green spaces, and good coffee outside. Anything that gets me outside for a few hours." },
   { label: "Collecting", text: "I like collecting things with stories behind them — pieces with interesting origins that mean something to me or the people I give them to." },
-  { label: "Capturing",  text: "Snapping little vignettes of life and friends. I shoot on my phone mostly — nothing staged, just moments worth keeping." },
+  { label: "Capturing",  text: "Snapping little vignettes of life and friends." },
 ];
 
 const TAG_META: Record<PanelId, { color: string; label: string }> = {
@@ -103,10 +103,17 @@ function useTheme(dm: boolean) {
   };
 }
 
+// Plain text arrow — renders as text, never as emoji
+const Arr = () => (
+  <span style={{ fontFamily: "monospace", fontStyle: "normal" }} aria-hidden>
+    &#x2197;
+  </span>
+);
+
 export default function HomePage() {
   const [dm, setDm]       = useState(false);
   const [panel, setPanel] = useState<PanelId | null>(null);
-  const panelWrapRef = useRef<HTMLDivElement>(null);
+  const panelWrapRef      = useRef<HTMLDivElement>(null);
   const t = useTheme(dm);
 
   const toggle = (id: PanelId) => {
@@ -115,10 +122,7 @@ export default function HomePage() {
     if (opening) {
       setTimeout(() => {
         if (!panelWrapRef.current) return;
-        const y =
-          panelWrapRef.current.getBoundingClientRect().top +
-          window.scrollY -
-          48;
+        const y = panelWrapRef.current.getBoundingClientRect().top + window.scrollY - 48;
         window.scrollTo({ top: y, behavior: "smooth" });
       }, 80);
     }
@@ -159,6 +163,7 @@ export default function HomePage() {
 
         .w { max-width: ${maxW}px; margin: 0 auto; width: 100%; }
 
+        /* Hero */
         .hero-inner {
           display: flex;
           flex-direction: column;
@@ -166,8 +171,8 @@ export default function HomePage() {
         }
         .hero-name {
           display: flex;
-          align-items: flex-start;
-          justify-content: flex-start;
+          align-items: center;
+          justify-content: center;
           padding: clamp(36px,6vw,72px) 0 clamp(24px,4vw,48px);
           border-bottom: 0.5px solid ${t.rule};
         }
@@ -189,9 +194,10 @@ export default function HomePage() {
             align-items: center;
             justify-content: center;
           }
-          .hero-tags  { padding-left: clamp(24px,3vw,56px); }
+          .hero-tags { padding-left: clamp(24px,3vw,56px); }
         }
 
+        /* Exp rows */
         .exp-row {
           display: grid;
           grid-template-columns: 1fr;
@@ -203,9 +209,28 @@ export default function HomePage() {
           .exp-row { grid-template-columns: 175px 1fr; gap: 0; }
         }
 
-        .tag-btn { transition: opacity 0.18s; }
-        .tag-btn:hover { opacity: 0.5 !important; }
+        /* Tag button — show subtle underline + hint on hover to signal clickability */
+        .tag-btn {
+          transition: opacity 0.18s;
+          position: relative;
+        }
+        .tag-btn:hover { opacity: 0.65 !important; }
+        .tag-btn .tag-hint {
+          opacity: 0;
+          transition: opacity 0.18s;
+          pointer-events: none;
+        }
+        .tag-btn:hover .tag-hint { opacity: 1; }
 
+        /* Active tag gets a left accent tick */
+        .tag-btn.active .tag-text {
+          text-decoration: underline;
+          text-underline-offset: 5px;
+          text-decoration-color: currentColor;
+          text-decoration-thickness: 1px;
+        }
+
+        /* Co links */
         .co-link {
           color: inherit;
           text-decoration: underline;
@@ -214,6 +239,13 @@ export default function HomePage() {
           transition: text-decoration-color 0.15s;
         }
         .co-link:hover { text-decoration-color: ${t.muted}; }
+
+        /* Prevent ↗ from rendering as emoji on iOS */
+        .arrow-icon {
+          font-family: monospace;
+          font-style: normal;
+          -webkit-text-stroke: 0;
+        }
       `}</style>
 
       {/* ── NAV ── */}
@@ -240,6 +272,8 @@ export default function HomePage() {
       <div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
         <div className="w" style={{ padding: `0 ${px}` }}>
           <div className="hero-inner">
+
+            {/* Name */}
             <div className="hero-name">
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
@@ -259,37 +293,90 @@ export default function HomePage() {
               </motion.div>
             </div>
 
+            {/* Tags */}
             <div className="hero-tags">
-              {tags.map((tag, i) => (
-                <motion.button
-                  key={tag.id}
-                  onClick={() => toggle(tag.id)}
-                  className="tag-btn"
-                  initial={{ opacity: 0, x: 14 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 + i * 0.08 }}
-                  style={{
-                    display: "flex", alignItems: "baseline", gap: 8,
-                    width: "fit-content", padding: "3px 0",
-                    opacity: panel && panel !== tag.id ? 0.2 : 1,
-                  }}
-                >
-                  <span style={{
-                    fontFamily: "'EB Garamond', serif",
-                    fontSize: "clamp(22px, 3.6vw, 38px)",
-                    fontWeight: 400, lineHeight: 1.3, color: t.ink,
-                  }}>
-                    {tag.label}
-                  </span>
-                  <sup style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: 11, fontWeight: 500,
-                    color: tag.color, verticalAlign: "super", lineHeight: 0,
-                  }}>
-                    {tag.num}
-                  </sup>
-                </motion.button>
-              ))}
+              {/*
+                Small "tap to explore" hint on mobile appears below the last tag
+                so users know the items are interactive.
+              */}
+              <div style={{
+                ...mono,
+                fontSize: 9,
+                marginBottom: 10,
+                letterSpacing: "0.14em",
+                opacity: panel ? 0 : 0.5,
+                transition: "opacity 0.3s",
+              }}>
+                tap to explore
+              </div>
+
+              {tags.map((tag, i) => {
+                const isActive = panel === tag.id;
+                const isDimmed = panel && !isActive;
+                return (
+                  <motion.button
+                    key={tag.id}
+                    onClick={() => toggle(tag.id)}
+                    className={`tag-btn${isActive ? " active" : ""}`}
+                    initial={{ opacity: 0, x: 14 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 + i * 0.08 }}
+                    style={{
+                      display: "flex", alignItems: "baseline", gap: 8,
+                      width: "fit-content", padding: "3px 0",
+                      opacity: isDimmed ? 0.2 : 1,
+                    }}
+                  >
+                    {/* Active indicator dot */}
+                    <span style={{
+                      display: "inline-block",
+                      width: 5, height: 5,
+                      borderRadius: "50%",
+                      background: isActive ? tag.color : "transparent",
+                      border: `1.5px solid ${isActive ? tag.color : "transparent"}`,
+                      flexShrink: 0,
+                      alignSelf: "center",
+                      marginBottom: 1,
+                      transition: "all 0.2s",
+                    }} />
+
+                    <span
+                      className="tag-text"
+                      style={{
+                        fontFamily: "'EB Garamond', serif",
+                        fontSize: "clamp(22px, 3.6vw, 38px)",
+                        fontWeight: 400, lineHeight: 1.3, color: t.ink,
+                        textDecoration: isActive ? "underline" : "none",
+                        textUnderlineOffset: 5,
+                        textDecorationColor: isActive ? tag.color : "transparent",
+                        textDecorationThickness: "1.5px",
+                        transition: "text-decoration-color 0.2s",
+                      }}
+                    >
+                      {tag.label}
+                    </span>
+
+                    <sup style={{
+                      fontFamily: "'DM Mono', monospace",
+                      fontSize: 11, fontWeight: 500,
+                      color: tag.color, verticalAlign: "super", lineHeight: 0,
+                    }}>
+                      {tag.num}
+                    </sup>
+
+                    {/* Hover hint — "explore" — hidden by default, shown on hover via CSS */}
+                    <span className="tag-hint" style={{
+                      ...mono,
+                      fontSize: 9,
+                      color: t.muted,
+                      alignSelf: "center",
+                      marginLeft: 4,
+                    }}>
+                      {isActive ? "close" : "explore"}
+                    </span>
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -322,10 +409,8 @@ export default function HomePage() {
               transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
               style={{ overflow: "hidden", borderBottom: `0.5px solid ${t.rule}` }}
             >
-              <div style={{
-                position: "sticky", top: 48, zIndex: 40,
-                background: TAG_META[panel].color,
-              }}>
+              {/* Sticky accent bar */}
+              <div style={{ position: "sticky", top: 48, zIndex: 40, background: TAG_META[panel].color }}>
                 <div className="w" style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                   padding: `11px ${px}`,
@@ -347,27 +432,27 @@ export default function HomePage() {
                       display: "flex", alignItems: "center", gap: 6,
                     }}
                   >
-                    Close ✕
+                    Close &#x2715;
                   </button>
                 </div>
               </div>
 
               <div className="w" style={{ padding: `0 ${px}` }}>
+
+                {/* ENG */}
                 {panel === "eng" && (
                   <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 640 }}>
                     <p style={{ fontSize: 18, fontStyle: "italic", lineHeight: 1.8, color: t.muted }}>
-                      I build software for work and personal projects, ranging from enterprise systems to mobile apps. Computer Science graduate from UGA, currently working at Infomedia in Atlanta.
+                      I build software for work and personal projects, ranging from enterprise systems to personal automation systems. Computer Science graduate from UGA, currently working at Infomedia in Atlanta.
                     </p>
                   </div>
                 )}
 
+                {/* MUSIC */}
                 {panel === "music" && (
                   <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 620 }}>
                     <p style={{ fontSize: 17, fontStyle: "italic", lineHeight: 1.8, color: t.muted, marginBottom: 28 }}>
-                      Concerts, guitars, and new artists on constant repeat. Music is always on —
-                      commuting, coding, hiking, doesn&apos;t matter. I lean towards anything with texture:
-                      indie, alt-folk, ambient, and occasionally something that makes no sense but hits
-                      exactly right.
+                      Concerts, guitars, and new and familiar artists on constant repeat. Music is always on.
                     </p>
                     <iframe
                       src="https://open.spotify.com/embed/playlist/4ynAF5u8eruVcNJGGEA7R5?utm_source=generator&theme=0"
@@ -379,6 +464,7 @@ export default function HomePage() {
                   </div>
                 )}
 
+                {/* SIDE QUESTS */}
                 {panel === "sports" && (
                   <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 680 }}>
                     <p style={{ fontSize: 17, fontStyle: "italic", lineHeight: 1.8, color: t.muted, marginBottom: 28 }}>
@@ -393,11 +479,13 @@ export default function HomePage() {
                   </div>
                 )}
 
+                {/* ADVENTURE */}
                 {panel === "adventure" && (
                   <div style={{ paddingTop: 64, paddingBottom: 64 }}>
                     <PlacesSection darkMode={dm} />
                   </div>
                 )}
+
               </div>
             </motion.div>
           )}
@@ -422,7 +510,7 @@ export default function HomePage() {
                     <span>{e.role}</span>
                     <span style={{ color: t.muted, fontWeight: 400, fontSize: 16 }}>—</span>
                     <a href={e.href} target="_blank" rel="noreferrer" className="co-link" style={{ fontSize: 17, fontWeight: 400 }}>
-                      {e.co} ↗
+                      {e.co} <span className="arrow-icon">&#x2197;</span>
                     </a>
                   </div>
                   <div style={{ fontSize: 15.5, fontStyle: "italic", lineHeight: 1.75, color: t.muted }}>
@@ -432,6 +520,7 @@ export default function HomePage() {
               </div>
             ))}
 
+            {/* Education */}
             <div className="exp-row" style={{ borderBottom: `0.5px solid ${t.rule}` }}>
               <div style={{ ...mono, paddingTop: 4 }}>{EDUCATION.date}</div>
               <div>
@@ -442,15 +531,16 @@ export default function HomePage() {
                   <span>{EDUCATION.degree}</span>
                   <span style={{ color: t.muted, fontWeight: 400, fontSize: 16 }}>—</span>
                   <a href={EDUCATION.href} target="_blank" rel="noreferrer" className="co-link" style={{ fontSize: 17, fontWeight: 400 }}>
-                    {EDUCATION.school} ↗
+                    {EDUCATION.school} <span className="arrow-icon">&#x2197;</span>
                   </a>
                 </div>
                 <div style={{ fontSize: 15.5, fontStyle: "italic", color: t.muted }}>
-                  {EDUCATION.location} · Go Dawgs 🐾
+                  {EDUCATION.location} · Go Dawgs
                 </div>
               </div>
             </div>
 
+            {/* Stack */}
             <p style={{ ...mono, marginTop: 48, marginBottom: 18 }}>Stack</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {STACK.map(s => (
@@ -464,6 +554,7 @@ export default function HomePage() {
               ))}
             </div>
 
+            {/* Projects */}
             <p style={{ ...mono, marginTop: 48, marginBottom: 4 }}>Projects</p>
             {PROJECTS.map(p => (
               <div key={p.name} style={{ padding: "24px 0", borderTop: `0.5px solid ${t.rule}` }}>
@@ -474,7 +565,7 @@ export default function HomePage() {
                   <span>{p.name}</span>
                   <span style={{ color: t.muted, fontWeight: 400, fontSize: 16 }}>—</span>
                   <a href={p.href} target="_blank" rel="noreferrer" className="co-link" style={{ fontSize: 17, fontWeight: 400 }}>
-                    {p.link}
+                    {p.link} <span className="arrow-icon">&#x2197;</span>
                   </a>
                 </div>
                 <p style={{ fontSize: 15.5, fontStyle: "italic", lineHeight: 1.75, color: t.muted, marginBottom: 12 }}>
@@ -499,24 +590,33 @@ export default function HomePage() {
       </div>
 
       {/* ── CONTACT ── */}
-<div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
-  <div className="w" style={{ padding: `52px ${px}` }}>
-    <p style={{ fontSize: 17, fontStyle: "italic", color: t.muted, marginBottom: 22, lineHeight: 1.7 }}>
-      I&apos;m always happy to connect — about work, projects, tennis, travel, or literally anything else.
-    </p>
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 22 }}>
-      <a href="mailto:michaelchendevs@gmail.com" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11.5, color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4 }}>
-        michaelchendevs@gmail.com
-      </a>
-      <a href="https://linkedin.com/in/michael-chen880/" target="_blank" rel="noreferrer" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11.5, color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4 }}>
-        LinkedIn ↗
-      </a>
-      <a href="/MichaelChenResume.pdf" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11.5, color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4 }}>
-        Resume ↗
-      </a>
-    </div>
-  </div>
-</div>
+      <div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
+        <div className="w" style={{ padding: `52px ${px}` }}>
+          <p style={{ fontSize: 17, fontStyle: "italic", color: t.muted, marginBottom: 22, lineHeight: 1.7 }}>
+            I&apos;m always happy to connect — about work, projects, tennis, travel, or literally anything else.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 22 }}>
+            {[
+              { label: "michaelchendevs@gmail.com", href: "mailto:michaelchendevs@gmail.com" },
+              { label: "LinkedIn",                  href: "https://linkedin.com/in/michael-chen880/" },
+              { label: "Resume",                    href: "/MichaelChenResume.pdf" },
+            ].map(l => (
+              <a
+                key={l.label} href={l.href}
+                target={l.href.startsWith("http") ? "_blank" : undefined}
+                rel={l.href.startsWith("http") ? "noreferrer" : undefined}
+                style={{
+                  fontFamily: "'DM Mono', monospace", fontSize: 11.5,
+                  color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4,
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                }}
+              >
+                {l.label} <span className="arrow-icon">&#x2197;</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* ── FOOTER ── */}
       <div className="w" style={{
