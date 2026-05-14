@@ -5,10 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { places } from "@/data/places";
 import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 
-/**
- * PlacesSection v3 — no globe, polaroid/photograph frame layout.
- * No internal title or Card wrapper — parent controls that.
- */
 export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -88,15 +84,15 @@ export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
               </AnimatePresence>
             </div>
 
-            {/* Badge inside image — always readable */}
-              <div style={{
-                position: "absolute", top: 10, right: 10, zIndex: 10,
-                background: "#0a0a0f", border: "2px solid #ffe66d",
-                color: "#ffe66d", fontSize: 11, fontWeight: 900,
-                padding: "3px 10px", boxShadow: "2px 2px 0 #ffe66d",
-              }}>
-                {currentIndex + 1} / {places.length}
-              </div>
+            {/* Badge */}
+            <div style={{
+              position: "absolute", top: 10, right: 10, zIndex: 10,
+              background: "#0a0a0f", border: "2px solid #ffe66d",
+              color: "#ffe66d", fontSize: 11, fontWeight: 900,
+              padding: "3px 10px", boxShadow: "2px 2px 0 #ffe66d",
+            }}>
+              {currentIndex + 1} / {places.length}
+            </div>
 
             {/* Caption strip */}
             <div style={{ paddingTop: 12, textAlign: "center" }}>
@@ -111,13 +107,10 @@ export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
               </div>
             </div>
           </div>
-
         </div>
 
-        {/* Right panel: arrows row + description + dots */}
+        {/* Right panel */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-
-          {/* Arrow row at top */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <ArrowBtn onClick={prevPlace} disabled={isAnimating}><ChevronLeft size={20} color="#ffe66d" /></ArrowBtn>
             <ArrowBtn onClick={nextPlace} disabled={isAnimating}><ChevronRight size={20} color="#ffe66d" /></ArrowBtn>
@@ -167,7 +160,7 @@ export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
 
         {/* Polaroid */}
         <div style={{
-          background: "#fff", padding: "10px 10px 46px",
+          background: "#fff", padding: "10px 10px 58px",
           border: "3px solid #0a0a0f", boxShadow: "5px 5px 0 #0a0a0f",
           transform: "rotate(-1deg)", marginBottom: 20, position: "relative",
         }}>
@@ -193,9 +186,17 @@ export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
               {currentIndex + 1} / {places.length}
             </div>
           </div>
+
+          {/* Caption with coords */}
           <div style={{ paddingTop: 10, textAlign: "center" }}>
             <div style={{ fontFamily: "'Courier New', monospace", fontSize: 13, fontWeight: 700, color: "#0a0a0f" }}>
               {currentPlace.name}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 4, opacity: .5 }}>
+              <MapPin size={10} color="#0a0a0f" />
+              <span style={{ fontFamily: "monospace", fontSize: 10, color: "#0a0a0f" }}>
+                {currentPlace.coords[0].toFixed(2)}°, {currentPlace.coords[1].toFixed(2)}°
+              </span>
             </div>
           </div>
         </div>
@@ -212,9 +213,9 @@ export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
           </motion.p>
         </AnimatePresence>
 
-        {/* Both nav buttons — identical Memphis style */}
+        {/* Nav buttons */}
         <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-          {[{ label: "← Prev", fn: prevPlace }, { label: "Next →", fn: nextPlace }].map((b) => (
+          {[{ label: "Prev", fn: prevPlace }, { label: "Next", fn: nextPlace }].map((b) => (
             <button
               key={b.label}
               onClick={b.fn}
