@@ -106,7 +106,6 @@ function useTheme(dm: boolean) {
 export default function HomePage() {
   const [dm, setDm]       = useState(false);
   const [panel, setPanel] = useState<PanelId | null>(null);
-  // ref on the outer panel wrapper — we scroll this into view
   const panelWrapRef = useRef<HTMLDivElement>(null);
   const t = useTheme(dm);
 
@@ -114,8 +113,6 @@ export default function HomePage() {
     const opening = panel !== id;
     setPanel(opening ? id : null);
     if (opening) {
-      // Wait for AnimatePresence to mount the panel, then scroll so the
-      // top of the wrapper is just below the sticky nav (48 px).
       setTimeout(() => {
         if (!panelWrapRef.current) return;
         const y =
@@ -169,8 +166,8 @@ export default function HomePage() {
         }
         .hero-name {
           display: flex;
-          align-items: center;
-          justify-content: center;
+          align-items: flex-start;
+          justify-content: flex-start;
           padding: clamp(36px,6vw,72px) 0 clamp(24px,4vw,48px);
           border-bottom: 0.5px solid ${t.rule};
         }
@@ -226,15 +223,9 @@ export default function HomePage() {
         transition: "background 0.3s",
       }}>
         <div className="w" style={{
-          display: "flex", justifyContent: "space-between", alignItems: "center",
+          display: "flex", justifyContent: "flex-end", alignItems: "center",
           padding: `0 ${px}`, height: 48,
         }}>
-          <button
-            onClick={() => setPanel(null)}
-            style={{ ...mono, fontSize: "10.5px", fontWeight: 500, color: t.ink }}
-          >
-            Michael Chen
-          </button>
           <button
             onClick={() => setDm(d => !d)}
             aria-label="Toggle dark mode"
@@ -256,7 +247,7 @@ export default function HomePage() {
                 transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
                 style={{
                   fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "clamp(56px, 9vw, 96px)",
+                  fontSize: "clamp(72px, 9vw, 96px)",
                   fontWeight: 300,
                   fontStyle: "italic",
                   lineHeight: 1.06,
@@ -319,7 +310,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── PANEL WRAPPER — ref lives here so scroll targets the very top ── */}
+      {/* ── PANEL WRAPPER ── */}
       <div ref={panelWrapRef}>
         <AnimatePresence initial={false}>
           {panel && (
@@ -331,11 +322,8 @@ export default function HomePage() {
               transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
               style={{ overflow: "hidden", borderBottom: `0.5px solid ${t.rule}` }}
             >
-              {/* Accent bar — sticky so Close button stays reachable while scrolling */}
               <div style={{
-                position: "sticky",
-                top: 48,
-                zIndex: 40,
+                position: "sticky", top: 48, zIndex: 40,
                 background: TAG_META[panel].color,
               }}>
                 <div className="w" style={{
@@ -364,19 +352,15 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="w" style={{ padding: `0 ${px}` }}>
-
-                {/* ENG */}
                 {panel === "eng" && (
                   <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 640 }}>
                     <p style={{ fontSize: 18, fontStyle: "italic", lineHeight: 1.8, color: t.muted }}>
-                     I build software for work and personal projects, ranging from enterprise systems to mobile apps. Computer Science graduate from UGA, currently working at Infomedia in Atlanta.
+                      I build software for work and personal projects, ranging from enterprise systems to mobile apps. Computer Science graduate from UGA, currently working at Infomedia in Atlanta.
                     </p>
                   </div>
                 )}
 
-                {/* MUSIC */}
                 {panel === "music" && (
                   <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 620 }}>
                     <p style={{ fontSize: 17, fontStyle: "italic", lineHeight: 1.8, color: t.muted, marginBottom: 28 }}>
@@ -395,7 +379,6 @@ export default function HomePage() {
                   </div>
                 )}
 
-                {/* SIDE QUESTS */}
                 {panel === "sports" && (
                   <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 680 }}>
                     <p style={{ fontSize: 17, fontStyle: "italic", lineHeight: 1.8, color: t.muted, marginBottom: 28 }}>
@@ -410,13 +393,11 @@ export default function HomePage() {
                   </div>
                 )}
 
-                {/* ADVENTURE */}
                 {panel === "adventure" && (
                   <div style={{ paddingTop: 64, paddingBottom: 64 }}>
                     <PlacesSection darkMode={dm} />
                   </div>
                 )}
-
               </div>
             </motion.div>
           )}
@@ -451,7 +432,6 @@ export default function HomePage() {
               </div>
             ))}
 
-            {/* Education */}
             <div className="exp-row" style={{ borderBottom: `0.5px solid ${t.rule}` }}>
               <div style={{ ...mono, paddingTop: 4 }}>{EDUCATION.date}</div>
               <div>
@@ -471,7 +451,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Stack */}
             <p style={{ ...mono, marginTop: 48, marginBottom: 18 }}>Stack</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {STACK.map(s => (
@@ -485,7 +464,6 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Projects */}
             <p style={{ ...mono, marginTop: 48, marginBottom: 4 }}>Projects</p>
             {PROJECTS.map(p => (
               <div key={p.name} style={{ padding: "24px 0", borderTop: `0.5px solid ${t.rule}` }}>
@@ -521,32 +499,24 @@ export default function HomePage() {
       </div>
 
       {/* ── CONTACT ── */}
-      <div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
-        <div className="w" style={{ padding: `52px ${px}` }}>
-          <p style={{ fontSize: 17, fontStyle: "italic", color: t.muted, marginBottom: 22, lineHeight: 1.7 }}>
-            I&apos;m always happy to connect — about work, projects, tennis, travel, or literally anything else.
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 22 }}>
-            {[
-              { label: "michaelchendevs@gmail.com", href: "mailto:michaelchendevs@gmail.com" },
-              { label: "LinkedIn ↗",                href: "https://linkedin.com/in/michael-chen880/" },
-              { label: "Resume ↗",                  href: "/MichaelChenResume.pdf" },
-            ].map(l => (
-              <a
-                key={l.label} href={l.href}
-                target={l.href.startsWith("http") ? "_blank" : undefined}
-                rel={l.href.startsWith("http") ? "noreferrer" : undefined}
-                style={{
-                  fontFamily: "'DM Mono', monospace", fontSize: 11.5,
-                  color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4,
-                }}
-              >
-                {l.label}
-              </a>
-            ))}
-          </div>
-        </div>
-      </div>
+<div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
+  <div className="w" style={{ padding: `52px ${px}` }}>
+    <p style={{ fontSize: 17, fontStyle: "italic", color: t.muted, marginBottom: 22, lineHeight: 1.7 }}>
+      I&apos;m always happy to connect — about work, projects, tennis, travel, or literally anything else.
+    </p>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 22 }}>
+      <a href="mailto:michaelchendevs@gmail.com" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11.5, color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4 }}>
+        michaelchendevs@gmail.com
+      </a>
+      <a href="https://linkedin.com/in/michael-chen880/" target="_blank" rel="noreferrer" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11.5, color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4 }}>
+        LinkedIn ↗
+      </a>
+      <a href="/MichaelChenResume.pdf" style={{ fontFamily: "'DM Mono', monospace", fontSize: 11.5, color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4 }}>
+        Resume ↗
+      </a>
+    </div>
+  </div>
+</div>
 
       {/* ── FOOTER ── */}
       <div className="w" style={{
@@ -554,7 +524,6 @@ export default function HomePage() {
         alignItems: "center", gap: 8, padding: `18px ${px}`,
       }}>
         <p style={{ ...mono }}>© {new Date().getFullYear()} Michael Chen</p>
-        <p style={{ ...mono }}>UGA — B.S. Computer Science, 2024</p>
       </div>
     </main>
   );
