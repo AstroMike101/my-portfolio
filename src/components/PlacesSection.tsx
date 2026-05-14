@@ -56,7 +56,7 @@ export default function PlacesSection({ darkMode }: { darkMode?: boolean }) {
 
   return (
     <>
-      <p style={{ fontSize: 19, fontWeight: 700, fontStyle: "italic", opacity: .45, marginBottom: 20 }}>
+      <p style={{ fontSize: 18, fontWeight: 700, fontStyle: "italic", opacity: .45, marginBottom: 20 }}>
         all photos taken by me :D
       </p>
 
