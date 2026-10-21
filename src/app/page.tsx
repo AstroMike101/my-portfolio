@@ -561,6 +561,10 @@ export default function HomePage() {
           .doodle { position: absolute; top: 18px; right: clamp(14px, 4vw, 40px); width: 62px; height: 62px; transform: rotate(-8deg); pointer-events: none; }
           .page .title { padding-right: 58px; }
           .skyline { display: block; width: 100%; height: auto; margin-top: 34px; color: var(--ink); }
+          .hint { display: flex; align-items: flex-end; gap: 4px; margin-top: 22px; font-size: 23px; line-height: 1.2; color: var(--muted); transform: rotate(-1.5deg); transform-origin: left; }
+          .hint svg { flex-shrink: 0; margin-bottom: -10px; }
+          .hint-touch { display: none; }
+          @media (hover: none) { .hint-hover { display: none; } .hint-touch { display: inline; } }
           @media (min-width: 1440px) {
             .doodle { top: 70px; right: -150px; width: 118px; height: 118px; }
             .page .title { padding-right: 0; }
@@ -715,6 +719,18 @@ export default function HomePage() {
                     <button style={{ "--c": "var(--c-adventure)" } as React.CSSProperties} onClick={() => open("adventure")}><Mark c="adventure" delay={1300}>restless need to explore</Mark></button>.
                   </p>
                   <Skyline className="skyline" delay={2} lit={dm || night} />
+                  <motion.p
+                    className="hand hint"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 2.4 }}
+                  >
+                    <span><span className="hint-hover">Click</span><span className="hint-touch">Tap</span> a highlight or a section below to explore</span>
+                    <svg viewBox="0 0 34 34" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 5 C18 6 25 13 23 29" />
+                      <path d="M17 23.5 L23 29.5 L28.5 23" />
+                    </svg>
+                  </motion.p>
                   <div className="index">
                     {TAGS.map(t => (
                       <button key={t.id} onClick={() => open(t.id)} style={{ "--c": `var(--c-${t.id})` } as React.CSSProperties}>
