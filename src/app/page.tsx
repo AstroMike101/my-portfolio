@@ -202,6 +202,15 @@ const TABS: { label: string; color: string; group: NoteId[] }[] = [
   { label: "Adventure",   color: "var(--c-adventure)", group: ["adventure"] },
 ];
 
+// Easter-egg words are stored as FNV-1a hashes so the trigger never appears
+// as readable text in the shipped JavaScript.
+const fingerprint = (s: string) => {
+  let h = 0x811c9dc5;
+  for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h;
+};
+const BALL_EGG = 470939810;
+
 const ThemeCtx = createContext(false);
 
 function Mark({ c, type = "highlight", delay = 0, children }: {
@@ -298,7 +307,7 @@ export default function HomePage() {
   const onSearch = (value: string) => {
     setQuery(value);
     const q = value.trim().toLowerCase();
-    if (q === "tennis" && !reduce) setBall(Date.now());
+    if (fingerprint(q) === BALL_EGG && !reduce) setBall(Date.now());
     const hit = places.findIndex(p => {
       const city = p.name.split(",")[0].toLowerCase();
       return q.length >= 4 && (city === q || city.replace(/ city$/, "") === q);
