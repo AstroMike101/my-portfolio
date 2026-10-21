@@ -10,6 +10,7 @@ import PlacesSection from "@/components/PlacesSection";
 import { places } from "@/data/places";
 import { RESUME, RESUME_PDF } from "@/data/resume";
 import Doodle, { Skyline, type DoodleKind } from "@/components/Doodle";
+import Hearts from "@/components/Hearts";
 
 type Accent = "eng" | "music" | "sports" | "adventure";
 type NoteId = "index" | "contact" | "eng" | "experience" | "projects" | "resume" | "music" | "sports" | "adventure";
@@ -210,6 +211,7 @@ const fingerprint = (s: string) => {
   return h;
 };
 const BALL_EGG = 470939810;
+const LOVE_EGG = 3148932341;
 
 const ThemeCtx = createContext(false);
 
@@ -257,6 +259,8 @@ export default function HomePage() {
   const [night, setNight]   = useState(false);
   const [narrow, setNarrow] = useState(false);
   const [ball, setBall]     = useState<number | null>(null);
+  const [love, setLove]     = useState<{ key: number; name: string } | null>(null);
+  const endLove = useCallback(() => setLove(null), []);
   const [placeJump, setPlaceJump] = useState<{ index: number; key: number }>();
   const [done, setDone]     = useState<Record<string, boolean>>({});
   const [dir, setDir]       = useState(1);
@@ -308,6 +312,7 @@ export default function HomePage() {
     setQuery(value);
     const q = value.trim().toLowerCase();
     if (fingerprint(q) === BALL_EGG && !reduce) setBall(Date.now());
+    if (fingerprint(q) === LOVE_EGG) setLove({ key: Date.now(), name: q });
     const hit = places.findIndex(p => {
       const city = p.name.split(",")[0].toLowerCase();
       return q.length >= 4 && (city === q || city.replace(/ city$/, "") === q);
@@ -710,7 +715,7 @@ export default function HomePage() {
                 </div>
               );
             })}
-            {!results.length && <p className="empty">No notes match “{query}”.</p>}
+            {!results.length && ![BALL_EGG, LOVE_EGG].includes(fingerprint(query.trim().toLowerCase())) && <p className="empty">No notes match “{query}”.</p>}
           </nav>
 
           <div className="side-foot mono">© {new Date().getFullYear()} Michael Chen</div>
@@ -1004,6 +1009,8 @@ export default function HomePage() {
             </button>
           ))}
         </nav>
+
+        {love && <Hearts key={love.key} name={love.name} calm={!!reduce} onDone={endLove} />}
 
         <AnimatePresence>
           {ball && (
