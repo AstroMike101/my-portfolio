@@ -246,6 +246,7 @@ export default function HomePage() {
   const [query, setQuery]   = useState("");
   const [copied, setCopied] = useState(false);
   const [night, setNight]   = useState(false);
+  const [narrow, setNarrow] = useState(false);
   const [ball, setBall]     = useState<number | null>(null);
   const [placeJump, setPlaceJump] = useState<{ index: number; key: number }>();
   const [done, setDone]     = useState<Record<string, boolean>>({});
@@ -269,6 +270,18 @@ export default function HomePage() {
     setView("note");
     paneRef.current?.scrollTo({ top: 0 });
   }, [active]);
+
+  // On phones the note pane is hidden behind the list until a note is opened.
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 860px)");
+    const sync = () => setNarrow(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  // Only mount the page while it's on screen, so its drawings and highlights
+  // animate when the note is opened (and measure real text, not a hidden pane).
+  const paneVisible = !narrow || view === "note";
 
   // The skyline lights up after dark in Atlanta.
   useEffect(() => {
@@ -675,7 +688,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+          {/* No initial={false} here: it would also skip the skyline and doodle drawing on first load. */}
+          <AnimatePresence mode="popLayout" custom={dir}>
+            {paneVisible && (
             <motion.div
               key={active}
               className="leaf"
@@ -915,6 +930,7 @@ export default function HomePage() {
               </nav>
             </article>
             </motion.div>
+            )}
           </AnimatePresence>
         </section>
 
