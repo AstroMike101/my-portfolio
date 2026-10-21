@@ -18,6 +18,7 @@
     "react-globe.gl": "^2.36.0",
     "react-hook-form": "^7.62.0",
     "react-simple-typewriter": "^5.0.1",
+    "rough-notation": "^0.5.1",
     "three": "^0.180.0"
   },
   "devDependencies": {

@@ -1,11 +1,18 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Moon, Sun } from "lucide-react";
+import { annotate } from "rough-notation";
+import {
+  ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronLeft, Link2, Moon, Search, Sun,
+} from "lucide-react";
 import PlacesSection from "@/components/PlacesSection";
+import { places } from "@/data/places";
 
-type PanelId = "eng" | "music" | "sports" | "adventure";
+type Accent = "eng" | "music" | "sports" | "adventure";
+type NoteId = "index" | "contact" | "eng" | "experience" | "projects" | "music" | "sports" | "adventure";
+
+const EMAIL = "michaelchendevs@gmail.com";
 
 const EXPERIENCE = [
   {
@@ -21,6 +28,7 @@ const EXPERIENCE = [
     co: "CoreForceTech",
     href: "https://www.coreforcetech.com",
     desc: "Built tools that help public safety agencies act faster and smarter. Worked on a .NET C# service with WPF GUI for automated data collection, streamlined deployments for 20+ clients, and integrated real-time APIs to improve accuracy and uptime.",
+    mark: { text: "20+ clients", type: "underline" as const },
   },
   {
     date: "Jun 2023 — Aug 2023",
@@ -28,6 +36,7 @@ const EXPERIENCE = [
     co: "Kohl's Corporate",
     href: "https://corporate.kohls.com/",
     desc: "Shipped React and Adobe Experience Manager pages reaching 65M+ customers. Ran A/B tests, built SPA-driven UIs.",
+    mark: { text: "65M+", type: "circle" as const },
   },
 ];
 
@@ -50,6 +59,7 @@ const PROJECTS = [
     name: "Barkada Hospitality",
     href: "https://barkadahospitality.info",
     link: "barkadahospitality.info",
+    img: "/images/barkad1.png",
     desc: "Full-stack reservation and payment platform for an Atlanta sushi omakase experience. Real-time seat availability via Firestore, non-refundable deposits via Square Payments.",
     tags: ["Next.js", "Firebase", "Square API", "Tailwind"],
   },
@@ -57,6 +67,7 @@ const PROJECTS = [
     name: "ATL BootWatch",
     href: "https://www.atlboot.watch/",
     link: "atlboot.watch",
+    img: "/images/boot1.png",
     desc: "Community-driven platform tracking parking boot activity across Atlanta. Users report incidents on a live map to bring transparency to a problem most locals deal with weekly.",
     tags: ["Next.js", "Supabase", "Google Maps API", "Tailwind"],
   },
@@ -64,6 +75,7 @@ const PROJECTS = [
     name: "Billr",
     href: "https://apps.apple.com/us/app/billr-invoice-tracker/id6761347420",
     link: "App Store",
+    img: "/images/billr1.png",
     desc: "iOS invoicing app for freelancers and small businesses. Log hours, flat fees, and expenses — generate PDF invoices with your logo and track what you're owed from your iPhone.",
     tags: ["Swift", "SwiftUI", "Supabase", "RevenueCat"],
   },
@@ -71,6 +83,7 @@ const PROJECTS = [
     name: "Signature Studio",
     href: "https://signature-studio-nine.vercel.app/",
     link: "signature-studio",
+    img: null,
     desc: "Interactive tool for designing custom signatures. Handwriting-based fonts, structural variations, and live previews powered by opentype.js.",
     tags: ["Next.js", "opentype.js", "Tailwind"],
   },
@@ -86,545 +99,636 @@ const SIDEQUESTS = [
   { label: "Capturing",  text: "Snapping little vignettes of life and friends." },
 ];
 
-const TAG_META: Record<PanelId, { color: string; label: string }> = {
-  eng:       { color: "#1855a3", label: "Software Engineer" },
-  music:     { color: "#2a7030", label: "Music Lover" },
-  sports:    { color: "#b84a10", label: "Side Quest Enthusiast" },
-  adventure: { color: "#9a7000", label: "Adventure Seeker" },
+const PANEL_COPY: Record<Accent, { eyebrow: string; title: string; intro: string; details: string[] }> = {
+  eng: {
+    eyebrow: "Build mode",
+    title: "Software that feels useful before it feels loud.",
+    intro: "I like tools with clear edges: fast paths through real workflows, thoughtful interfaces, and systems that keep doing their job after the fun prototype phase is over.",
+    details: ["Enterprise ecommerce", "Full-stack product work", "Founder-style side projects"],
+  },
+  music: {
+    eyebrow: "Listening mode",
+    title: "A constant soundtrack, usually with a guitar nearby.",
+    intro: "Music is the background thread through most of my days: concerts, new artists, familiar albums, and the kind of songs that make ordinary errands feel cinematic.",
+    details: ["Concert calendar", "Guitar rabbit holes", "Repeat listens"],
+  },
+  sports: {
+    eyebrow: "After hours",
+    title: "Small rituals, long rallies, and useful ways to reset.",
+    intro: "Outside of work I like having motion in the week. Tennis, lifting, basketball, films, collecting, and little photo walks all keep the rest of life feeling textured.",
+    details: ["Tennis leagues", "Training rhythm", "Creative detours"],
+  },
+  adventure: {
+    eyebrow: "Photo log",
+    title: "A map made from places I actually stopped to notice.",
+    intro: "Travel is partly about the city and partly about the tiny proof that you were paying attention: the street corner, the meal, the light, the accidental view.",
+    details: [],
+  },
 };
 
-function useTheme(dm: boolean) {
-  return {
-    bg:    dm ? "#131312" : "#EEEEEA",
-    ink:   dm ? "#f0f0ec" : "#111110",
-    muted: dm ? "#8a8a82" : "#79796e",
-    rule:  dm ? "#2e2e2c" : "#d0d0ca",
-    pill:  dm ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)",
-  };
+const TAGS: { id: Accent; label: string; desc: string; num: string }[] = [
+  { id: "eng",       label: "software engineer",     desc: "work, stack, shipped projects",    num: "01" },
+  { id: "music",     label: "music lover",           desc: "playlists, concerts, guitars",     num: "02" },
+  { id: "sports",    label: "side quest enthusiast", desc: "tennis, training, little rituals", num: "03" },
+  { id: "adventure", label: "adventure seeker",      desc: "places, photos, coordinates",      num: "04" },
+];
+
+const CONTACT_LINE = "I'm always happy to connect — about work, projects, tennis, travel, or literally anything else.";
+
+type Note = { id: NoteId; folder: string; title: string; accent?: Accent; meta: string; preview: string; keywords: string };
+
+const NOTES: Note[] = [
+  { id: "index",      folder: "Pinned",        title: "Michael Chen",          meta: "Index",          preview: "I'm a software engineer based in Atlanta — fuelled by good music, fun side quests, and a restless need to explore.", keywords: "about atlanta" },
+  { id: "contact",    folder: "Pinned",        title: "Contact",               meta: "Email",          preview: CONTACT_LINE, keywords: `email linkedin resume ${EMAIL}` },
+  { id: "eng",        folder: "Work",          title: "Software Engineer",     accent: "eng",       meta: "Build mode",     preview: PANEL_COPY.eng.intro, keywords: STACK.join(" ") },
+  { id: "experience", folder: "Work",          title: "Experience",            accent: "eng",       meta: "2023 — Now",     preview: "Infomedia · CoreForceTech · Kohl's Corporate · University of Georgia", keywords: EXPERIENCE.map(e => e.desc).join(" ") + " uga education stack" },
+  { id: "projects",   folder: "Work",          title: "Projects",              accent: "eng",       meta: `${PROJECTS.length} shipped`, preview: PROJECTS.map(p => p.name).join(" · "), keywords: PROJECTS.map(p => p.desc + p.tags.join(" ")).join(" ") },
+  { id: "music",      folder: "Off the clock", title: "Music Lover",           accent: "music",     meta: "Listening mode", preview: PANEL_COPY.music.intro, keywords: "spotify playlist concerts guitar" },
+  { id: "sports",     folder: "Off the clock", title: "Side Quest Enthusiast", accent: "sports",    meta: "After hours",    preview: PANEL_COPY.sports.intro, keywords: SIDEQUESTS.map(s => s.label + " " + s.text).join(" ") },
+  { id: "adventure",  folder: "Off the clock", title: "Adventure Seeker",      accent: "adventure", meta: "Photo log",      preview: PANEL_COPY.adventure.intro, keywords: places.map(p => p.name).join(" ") + " travel photos" },
+];
+
+// Reading order for prev/next and the arrow keys.
+const ORDER: NoteId[] = ["index", "eng", "experience", "projects", "music", "sports", "adventure", "contact"];
+const FOLDERS = ["Pinned", "Work", "Off the clock"];
+
+// rough-notation draws into SVG attributes, so it needs literal colors rather than CSS variables.
+const INK: Record<"light" | "dark", Record<Accent, string>> = {
+  light: { eng: "#1855a3", music: "#2a7030", sports: "#b84a10", adventure: "#9a7000" },
+  dark:  { eng: "#6b9ee3", music: "#6cb872", sports: "#e8854a", adventure: "#dbb03a" },
+};
+
+const ThemeCtx = createContext(false);
+const ease = [0.22, 1, 0.36, 1] as const;
+
+function Mark({ c, type = "highlight", delay = 0, children }: {
+  c: Accent; type?: "highlight" | "underline" | "circle" | "box"; delay?: number; children: React.ReactNode;
+}) {
+  const dm = useContext(ThemeCtx);
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const ink = INK[dm ? "dark" : "light"][c];
+    const a = annotate(ref.current, {
+      type,
+      color: type === "highlight" ? `${ink}${dm ? "40" : "2e"}` : ink,
+      multiline: true,
+      padding: type === "circle" ? [4, 8] : 2,
+      strokeWidth: type === "highlight" ? 1 : 1.8,
+      animationDuration: type === "highlight" ? 700 : 550,
+    });
+    const t = setTimeout(() => a.show(), 420 + delay);
+    return () => { clearTimeout(t); a.remove(); };
+  }, [c, type, delay, dm]);
+  return <span ref={ref}>{children}</span>;
 }
 
-// Plain text arrow — renders as text, never as emoji
-const Arr = () => (
-  <span style={{ fontFamily: "monospace", fontStyle: "normal" }} aria-hidden>
-    &#x2197;
-  </span>
-);
+// Wraps one phrase of a sentence in a hand-drawn mark.
+function marked(text: string, mark: { text: string; type: "underline" | "circle" } | undefined, c: Accent) {
+  if (!mark || !text.includes(mark.text)) return text;
+  const [before, after] = text.split(mark.text);
+  return <>{before}<Mark c={c} type={mark.type} delay={300}>{mark.text}</Mark>{after}</>;
+}
 
 export default function HomePage() {
-  const [dm, setDm]       = useState(false);
-  const [panel, setPanel] = useState<PanelId | null>(null);
-  const panelWrapRef      = useRef<HTMLDivElement>(null);
-  const t = useTheme(dm);
+  const [dm, setDm]         = useState(false);
+  const [active, setActive] = useState<NoteId>("index");
+  const [view, setView]     = useState<"list" | "note">("list");
+  const [query, setQuery]   = useState("");
+  const [copied, setCopied] = useState(false);
+  const [done, setDone]     = useState<Record<string, boolean>>({});
+  const searchRef = useRef<HTMLInputElement>(null);
+  const paneRef   = useRef<HTMLDivElement>(null);
 
-  const toggle = (id: PanelId) => {
-    const opening = panel !== id;
-    setPanel(opening ? id : null);
-    if (opening) {
-      setTimeout(() => {
-        if (!panelWrapRef.current) return;
-        const y = panelWrapRef.current.getBoundingClientRect().top + window.scrollY - 48;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }, 80);
-    }
+  const note = NOTES.find(n => n.id === active)!;
+  const accent = note.accent;
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return NOTES;
+    return NOTES.filter(n => `${n.title} ${n.meta} ${n.preview} ${n.keywords}`.toLowerCase().includes(q));
+  }, [query]);
+
+  const open = (id: NoteId) => {
+    setActive(id);
+    setView("note");
+    paneRef.current?.scrollTo({ top: 0 });
   };
 
-  const tags: { id: PanelId; label: string; num: string; color: string }[] = [
-    { id: "eng",       label: "software engineer",    num: "1", color: TAG_META.eng.color },
-    { id: "music",     label: "music lover",           num: "2", color: TAG_META.music.color },
-    { id: "sports",    label: "side quest enthusiast", num: "3", color: TAG_META.sports.color },
-    { id: "adventure", label: "adventure seeker",      num: "4", color: TAG_META.adventure.color },
-  ];
+  // Deep links: /#projects opens that note.
+  useEffect(() => {
+    const id = window.location.hash.slice(1) as NoteId;
+    if (ORDER.includes(id)) { setActive(id); setView("note"); }
+  }, []);
 
-  const mono: React.CSSProperties = {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: "10px",
-    textTransform: "uppercase",
-    letterSpacing: "0.12em",
-    color: t.muted,
+  useEffect(() => {
+    history.replaceState(null, "", active === "index" ? window.location.pathname : `#${active}`);
+  }, [active]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = document.activeElement === searchRef.current;
+      if (e.key === "/" && !typing) { e.preventDefault(); searchRef.current?.focus(); return; }
+      if (e.key === "Escape" && typing) { setQuery(""); searchRef.current?.blur(); return; }
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      const list = ORDER.filter(id => results.some(r => r.id === id));
+      if (!list.length) return;
+      e.preventDefault();
+      const i = list.indexOf(active);
+      const next = e.key === "ArrowDown" ? list[Math.min(i + 1, list.length - 1)] : list[Math.max(i - 1, 0)];
+      if (next) open(i === -1 ? list[0] : next);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active, results]);
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* clipboard unavailable; nothing to do */ }
   };
 
-  const px   = "clamp(20px, 5vw, 72px)";
-  const maxW = 960;
+  const pos = ORDER.indexOf(active);
+  const prev = pos > 0 ? NOTES.find(n => n.id === ORDER[pos - 1]) : null;
+  const next = pos < ORDER.length - 1 ? NOTES.find(n => n.id === ORDER[pos + 1]) : null;
+
+  const ThemeBtn = (
+    <button className="icon" onClick={() => setDm(d => !d)} aria-label="Toggle dark mode">
+      {dm ? <Sun size={15} /> : <Moon size={15} />}
+    </button>
+  );
 
   return (
-    <main style={{
-      minHeight: "100vh",
-      background: t.bg,
-      color: t.ink,
-      fontFamily: "'EB Garamond', Georgia, serif",
-      transition: "background 0.3s, color 0.3s",
-    }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        ::selection { background: #111110; color: #EEEEEA; }
-        button { font-family: inherit; cursor: pointer; background: none; border: none; }
-        a { text-decoration: none; }
+    <ThemeCtx.Provider value={dm}>
+      <main
+        className={`app${dm ? " dark" : ""}`}
+        data-view={view}
+        style={{ "--a": accent ? `var(--c-${accent})` : "var(--ink)" } as React.CSSProperties}
+      >
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Cormorant+Garamond:ital,wght@0,400;1,300;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap');
 
-        .w { max-width: ${maxW}px; margin: 0 auto; width: 100%; }
-
-        /* Hero */
-        .hero-inner {
-          display: flex;
-          flex-direction: column;
-          min-height: clamp(280px, 38vh, 460px);
-        }
-        .hero-name {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: clamp(36px,6vw,72px) 0 clamp(24px,4vw,48px);
-          border-bottom: 0.5px solid ${t.rule};
-        }
-        .hero-tags {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: clamp(24px,4vw,52px) 0 clamp(28px,5vw,56px);
-          gap: 4px;
-        }
-        @media (min-width: 720px) {
-          .hero-inner { flex-direction: row; align-items: stretch; }
-          .hero-name  {
-            width: 44%;
-            border-bottom: none;
-            border-right: 0.5px solid ${t.rule};
-            padding-right: clamp(24px,3vw,56px);
-            align-items: center;
-            justify-content: center;
+          .app {
+            --bg: #EEEEEA;
+            --side: #E6E6E1;
+            --tile: #F7F6F2;
+            --paper: #fffdf8;
+            --ink: #111110;
+            --muted: #79796e;
+            --rule: #d6d6cf;
+            --dot: #cfcfc7;
+            --c-eng: #1855a3;
+            --c-music: #2a7030;
+            --c-sports: #b84a10;
+            --c-adventure: #9a7000;
+            display: grid; grid-template-columns: minmax(0, 1fr);
+            height: 100vh; height: 100dvh;
+            background: var(--bg); color: var(--ink);
+            font-family: 'EB Garamond', Georgia, serif; font-size: 17px;
+            transition: background .4s, color .4s;
           }
-          .hero-tags { padding-left: clamp(24px,3vw,56px); }
-        }
+          .app.dark {
+            --bg: #131312;
+            --side: #0e0e0d;
+            --tile: #1b1b19;
+            --paper: #ecebe4;
+            --ink: #f0f0ec;
+            --muted: #8a8a82;
+            --rule: #2a2a27;
+            --dot: #262624;
+            --c-eng: #6b9ee3;
+            --c-music: #6cb872;
+            --c-sports: #e8854a;
+            --c-adventure: #dbb03a;
+            color-scheme: dark;
+          }
+          :where(.app) *, :where(.app) *::before, :where(.app) *::after { box-sizing: border-box; margin: 0; padding: 0; }
+          :where(.app) button { font: inherit; cursor: pointer; background: none; border: none; color: inherit; text-align: left; }
+          :where(.app) a { color: inherit; text-decoration: none; }
+          .app ::selection { background: var(--a); color: var(--bg); }
 
-        /* Exp rows */
-        .exp-row {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 8px;
-          padding: 24px 0;
-          border-top: 0.5px solid ${t.rule};
-        }
-        @media (min-width: 580px) {
-          .exp-row { grid-template-columns: 175px 1fr; gap: 0; }
-        }
+          .mono { font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+          .serif { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300; letter-spacing: -0.015em; }
+          .hand { font-family: 'Caveat', cursive; font-weight: 500; }
+          .icon {
+            width: 34px; height: 34px; border-radius: 99px; flex-shrink: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: var(--muted); transition: background .2s, color .2s;
+          }
+          .icon:hover { background: var(--tile); color: var(--ink); }
 
-        /* Tag button — show subtle underline + hint on hover to signal clickability */
-        .tag-btn {
-          transition: opacity 0.18s;
-          position: relative;
-        }
-        .tag-btn:hover { opacity: 0.65 !important; }
-        .tag-btn .tag-hint {
-          opacity: 0;
-          transition: opacity 0.18s;
-          pointer-events: none;
-        }
-        .tag-btn:hover .tag-hint { opacity: 1; }
+          /* ── Sidebar ── */
+          .side {
+            display: flex; flex-direction: column; min-height: 0;
+            background: var(--side); border-right: 1px solid var(--rule);
+            padding-top: env(safe-area-inset-top, 0px);
+          }
+          .side-top { display: flex; align-items: center; justify-content: space-between; padding: 22px 18px 6px 22px; }
+          .side-top h1 { font-size: 30px; line-height: 1; }
+          .search { position: relative; margin: 14px 16px 6px; }
+          .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+          .search input {
+            width: 100%; padding: 10px 34px; border-radius: 12px;
+            border: 1px solid var(--rule); background: var(--tile); color: var(--ink);
+            font: inherit; font-size: 16px; outline: none; transition: border-color .2s, box-shadow .2s;
+          }
+          .search input:focus { border-color: var(--muted); box-shadow: 0 0 0 4px color-mix(in srgb, var(--muted) 14%, transparent); }
+          .search kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); border: 1px solid var(--rule); border-radius: 5px; padding: 1px 6px; }
+          .list { flex: 1; overflow-y: auto; padding: 6px 10px 20px; }
+          .folder { padding: 18px 12px 6px; }
+          .item { position: relative; display: block; width: 100%; padding: 11px 12px; border-radius: 12px; }
+          .item .bg { position: absolute; inset: 0; border-radius: 12px; background: var(--tile); box-shadow: 0 1px 0 var(--rule); }
+          .item > *:not(.bg) { position: relative; }
+          .item-title { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 500; }
+          .item-title i { width: 7px; height: 7px; border-radius: 99px; background: var(--c, var(--ink)); flex-shrink: 0; }
+          .item-sub { display: flex; gap: 8px; margin-top: 3px; font-size: 14.5px; color: var(--muted); white-space: nowrap; overflow: hidden; }
+          .item-sub span:last-child { overflow: hidden; text-overflow: ellipsis; }
+          .item-sub .mono { flex-shrink: 0; padding-top: 3px; font-size: 9.5px; }
+          .empty { padding: 24px 12px; color: var(--muted); font-style: italic; }
+          .side-foot { padding: 14px 22px calc(16px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--rule); }
 
-        /* Active tag gets a left accent tick */
-        .tag-btn.active .tag-text {
-          text-decoration: underline;
-          text-underline-offset: 5px;
-          text-decoration-color: currentColor;
-          text-decoration-thickness: 1px;
-        }
+          /* ── Note pane ── */
+          .pane {
+            position: relative; min-height: 0; overflow-y: auto;
+            background-color: var(--bg);
+            background-image: radial-gradient(var(--dot) 1px, transparent 1.2px);
+            background-size: 24px 24px;
+          }
+          .toolbar {
+            position: sticky; top: 0; z-index: 5;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+            background: color-mix(in srgb, var(--bg) 82%, transparent);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+          }
+          .back { display: none; align-items: center; gap: 2px; color: var(--a); font-size: 17px; }
+          .tools { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+          .tools .copied { color: var(--a); }
 
-        /* Co links */
-        .co-link {
-          color: inherit;
-          text-decoration: underline;
-          text-underline-offset: 3px;
-          text-decoration-color: ${t.rule};
-          transition: text-decoration-color 0.15s;
-        }
-        .co-link:hover { text-decoration-color: ${t.muted}; }
+          .page { max-width: 700px; margin: 0 auto; padding: 28px clamp(20px, 5vw, 48px) 80px; }
+          .eyebrow { color: var(--a); margin-bottom: 14px; }
+          .title { font-size: clamp(42px, 6vw, 64px); line-height: 1; margin-bottom: 22px; }
+          .lede { font-size: clamp(19px, 2.2vw, 22px); line-height: 1.6; color: var(--muted); }
+          .body p + p { margin-top: 14px; }
+          .label { margin: 44px 0 14px; color: var(--a); }
 
-        /* Prevent ↗ from rendering as emoji on iOS */
-        .arrow-icon {
-          font-family: monospace;
-          font-style: normal;
-          -webkit-text-stroke: 0;
-        }
-      `}</style>
+          .tldr { font-size: clamp(22px, 3vw, 28px); line-height: 1.55; }
+          .tldr button { color: var(--c); font-size: inherit; text-align: inherit; }
+          .index { margin-top: 36px; border-top: 1px solid var(--rule); }
+          .index button {
+            display: grid; grid-template-columns: 40px 1fr 24px; align-items: center; gap: 10px;
+            width: 100%; padding: 16px 4px; border-bottom: 1px solid var(--rule);
+            transition: padding .25s cubic-bezier(.22,1,.36,1);
+          }
+          .index button:hover { padding-left: 12px; }
+          .index .num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--c); }
+          .index .lbl { font-size: clamp(22px, 3vw, 28px); line-height: 1.15; }
+          .index button:hover .lbl { color: var(--c); }
+          .index svg { color: var(--muted); transition: transform .25s, color .25s; }
+          .index button:hover svg { color: var(--c); transform: translateX(3px); }
 
-      {/* ── NAV ── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 50,
-        background: t.bg, borderBottom: `0.5px solid ${t.rule}`,
-        transition: "background 0.3s",
-      }}>
-        <div className="w" style={{
-          display: "flex", justifyContent: "flex-end", alignItems: "center",
-          padding: `0 ${px}`, height: 48,
-        }}>
-          <button
-            onClick={() => setDm(d => !d)}
-            aria-label="Toggle dark mode"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, color: t.muted }}
-          >
-            {dm ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-        </div>
-      </nav>
+          .details { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 26px; padding-block: 14px; border-block: 1px solid var(--rule); }
+          .details > span { display: inline-flex; gap: 8px; align-items: baseline; font-size: 17px; }
+          .details .mono { color: var(--a); }
+          .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+          .chip {
+            font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase;
+            padding: 6px 10px; border-radius: 8px;
+            border: 1px solid color-mix(in srgb, var(--a) 30%, var(--rule));
+            background: color-mix(in srgb, var(--a) 7%, var(--tile));
+          }
+          .jump { display: inline-flex; align-items: center; gap: 6px; margin-top: 18px; margin-right: 18px; color: var(--a); border-bottom: 1px solid currentColor; padding-bottom: 1px; }
 
-      {/* ── HERO ── */}
-      <div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
-        <div className="w" style={{ padding: `0 ${px}` }}>
-          <div className="hero-inner">
+          .row { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 22px 0; border-top: 1px solid var(--rule); }
+          .row:last-of-type { border-bottom: 1px solid var(--rule); }
+          @media (min-width: 620px) { .row { grid-template-columns: 160px 1fr; gap: 0; } }
+          .row h3 { font-size: 19px; font-weight: 500; display: flex; flex-wrap: wrap; gap: 0 9px; align-items: baseline; }
+          .row h3 a { font-weight: 400; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); transition: text-decoration-color .2s; }
+          .row h3 a:hover { text-decoration-color: var(--a); }
+          .row .desc { margin-top: 6px; font-size: 16.5px; font-style: italic; line-height: 1.7; color: var(--muted); }
 
-            {/* Name */}
-            <div className="hero-name">
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
-                style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "clamp(72px, 9vw, 96px)",
-                  fontWeight: 300,
-                  fontStyle: "italic",
-                  lineHeight: 1.06,
-                  color: t.ink,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Michael<br />Chen
-              </motion.div>
+          .proj { display: grid; grid-template-columns: 1fr; gap: 18px; padding: 30px 0; border-top: 1px solid var(--rule); }
+          @media (min-width: 620px) { .proj { grid-template-columns: 210px 1fr; gap: 26px; } }
+          .snap { position: relative; align-self: start; padding: 7px; background: var(--paper); border-radius: 4px; box-shadow: 0 10px 24px -14px rgba(0,0,0,.4); transform: rotate(-1.5deg); transition: transform .4s cubic-bezier(.22,1,.36,1); }
+          .proj:nth-of-type(even) .snap { transform: rotate(1.5deg); }
+          .proj:hover .snap { transform: rotate(0) scale(1.02); }
+          .snap::before {
+            content: ""; position: absolute; top: -9px; left: 50%; width: 70px; height: 20px; transform: translateX(-50%) rotate(-3deg);
+            background: color-mix(in srgb, var(--c-adventure) 22%, rgba(255,255,255,.55)); box-shadow: 0 1px 2px rgba(0,0,0,.08);
+          }
+          .snap img, .snap .ph { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; object-position: top; display: block; border-radius: 2px; }
+          .snap .ph { display: flex; align-items: center; justify-content: center; background: #f1efe8; color: #1855a3; font-size: 54px; }
+          .proj h3 { font-size: 22px; font-weight: 500; }
+          .proj a.lnk { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; font-size: 16px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, var(--a) 60%, var(--rule)); }
+          .proj p { margin: 10px 0 14px; font-size: 16.5px; line-height: 1.7; color: var(--muted); font-style: italic; }
+
+          .check { display: grid; grid-template-columns: 26px 1fr; gap: 12px; width: 100%; padding: 16px 0; border-top: 1px solid var(--rule); }
+          .check:last-child { border-bottom: 1px solid var(--rule); }
+          .box {
+            width: 22px; height: 22px; margin-top: 2px; border-radius: 7px; border: 1.5px solid var(--a);
+            display: flex; align-items: center; justify-content: center; color: var(--bg);
+            transition: background .2s;
+          }
+          .check[aria-checked="true"] .box { background: var(--a); }
+          .check b { font-weight: 500; color: var(--a); }
+          .check > span:last-child { display: block; font-size: 17px; line-height: 1.65; transition: color .2s; }
+          .check[aria-checked="true"] > span:last-child { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--a) 60%, transparent); }
+
+          .margin { display: inline-block; font-size: 26px; color: var(--a); transform: rotate(-2deg); }
+          .sheet { margin-top: 18px; padding: 24px; border-radius: 18px; background: var(--tile); border: 1px solid var(--rule); }
+
+          .links a {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            padding: 18px 2px; border-bottom: 1px solid var(--rule); font-size: clamp(19px, 2.4vw, 24px);
+            transition: padding .25s cubic-bezier(.22,1,.36,1), color .2s;
+          }
+          .links a:first-child { border-top: 1px solid var(--rule); }
+          .links a:hover { padding-left: 10px; color: var(--c-eng); }
+
+          .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 64px; }
+          .pager button { padding: 14px 16px; border-radius: 14px; border: 1px solid var(--rule); background: var(--tile); transition: border-color .2s; }
+          .pager button:hover { border-color: var(--muted); }
+          .pager .mono { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+          .pager button:last-child { text-align: right; grid-column: 2; }
+          .pager button:last-child .mono { justify-content: flex-end; }
+
+          @media (min-width: 861px) {
+            .app { grid-template-columns: 320px minmax(0, 1fr); }
+          }
+          @media (max-width: 860px) {
+            .app[data-view="list"] .pane { display: none; }
+            .app[data-view="note"] .side { display: none; }
+            .back { display: inline-flex; }
+            .side { border-right: none; }
+          }
+        `}</style>
+
+        {/* ── SIDEBAR ── */}
+        <aside className="side">
+          <div className="side-top">
+            <div>
+              <h1 className="serif">Michael Chen</h1>
+              <p className="mono" style={{ marginTop: 8 }}>Notebook · {NOTES.length} notes</p>
             </div>
-
-            {/* Tags */}
-            <div className="hero-tags">
-              {/*
-                Small "tap to explore" hint on mobile appears below the last tag
-                so users know the items are interactive.
-              */}
-              <div style={{
-                ...mono,
-                fontSize: 9,
-                marginBottom: 10,
-                letterSpacing: "0.14em",
-                opacity: panel ? 0 : 0.5,
-                transition: "opacity 0.3s",
-              }}>
-                tap to explore
-              </div>
-
-              {tags.map((tag, i) => {
-                const isActive = panel === tag.id;
-                const isDimmed = panel && !isActive;
-                return (
-                  <motion.button
-                    key={tag.id}
-                    onClick={() => toggle(tag.id)}
-                    className={`tag-btn${isActive ? " active" : ""}`}
-                    initial={{ opacity: 0, x: 14 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 + i * 0.08 }}
-                    style={{
-                      display: "flex", alignItems: "baseline", gap: 8,
-                      width: "fit-content", padding: "3px 0",
-                      opacity: isDimmed ? 0.2 : 1,
-                    }}
-                  >
-                    {/* Active indicator dot */}
-                    <span style={{
-                      display: "inline-block",
-                      width: 5, height: 5,
-                      borderRadius: "50%",
-                      background: isActive ? tag.color : "transparent",
-                      border: `1.5px solid ${isActive ? tag.color : "transparent"}`,
-                      flexShrink: 0,
-                      alignSelf: "center",
-                      marginBottom: 1,
-                      transition: "all 0.2s",
-                    }} />
-
-                    <span
-                      className="tag-text"
-                      style={{
-                        fontFamily: "'EB Garamond', serif",
-                        fontSize: "clamp(22px, 3.6vw, 38px)",
-                        fontWeight: 400, lineHeight: 1.3, color: t.ink,
-                        textDecoration: isActive ? "underline" : "none",
-                        textUnderlineOffset: 5,
-                        textDecorationColor: isActive ? tag.color : "transparent",
-                        textDecorationThickness: "1.5px",
-                        transition: "text-decoration-color 0.2s",
-                      }}
-                    >
-                      {tag.label}
-                    </span>
-
-                    <sup style={{
-                      fontFamily: "'DM Mono', monospace",
-                      fontSize: 11, fontWeight: 500,
-                      color: tag.color, verticalAlign: "super", lineHeight: 0,
-                    }}>
-                      {tag.num}
-                    </sup>
-
-                    {/* Hover hint — "explore" — hidden by default, shown on hover via CSS */}
-                    <span className="tag-hint" style={{
-                      ...mono,
-                      fontSize: 9,
-                      color: t.muted,
-                      alignSelf: "center",
-                      marginLeft: 4,
-                    }}>
-                      {isActive ? "close" : "explore"}
-                    </span>
-                  </motion.button>
-                );
-              })}
-            </div>
+            {ThemeBtn}
           </div>
-        </div>
-      </div>
 
-      {/* ── TLDR ── */}
-      <div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
-        <div className="w" style={{
-          padding: `14px ${px}`,
-          fontFamily: "'DM Mono', monospace",
-          fontSize: 11, textTransform: "uppercase",
-          letterSpacing: "0.07em", lineHeight: 2, color: t.ink,
-        }}>
-          I&apos;m a <strong style={{ color: "#1855a3" }}>software engineer</strong> based in Atlanta —
-          fuelled by <strong style={{ color: "#2a7030" }}>good music</strong>,{" "}
-          <strong style={{ color: "#b84a10" }}>fun side quests</strong>, and a{" "}
-          <strong style={{ color: "#9a7000" }}>restless need to explore</strong>.
-        </div>
-      </div>
+          <div className="search">
+            <Search size={15} />
+            <input
+              ref={searchRef}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search notes"
+              aria-label="Search notes"
+            />
+            {!query && <kbd>/</kbd>}
+          </div>
 
-      {/* ── PANEL WRAPPER ── */}
-      <div ref={panelWrapRef}>
-        <AnimatePresence initial={false}>
-          {panel && (
-            <motion.div
-              key={panel}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
-              style={{ overflow: "hidden", borderBottom: `0.5px solid ${t.rule}` }}
-            >
-              {/* Sticky accent bar */}
-              <div style={{ position: "sticky", top: 48, zIndex: 40, background: TAG_META[panel].color }}>
-                <div className="w" style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: `11px ${px}`,
-                }}>
-                  <span style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: 11, fontWeight: 500,
-                    textTransform: "uppercase", letterSpacing: "0.12em",
-                    color: "#fff",
-                  }}>
-                    {TAG_META[panel].label}
-                  </span>
-                  <button
-                    onClick={() => setPanel(null)}
-                    style={{
-                      fontFamily: "'DM Mono', monospace",
-                      fontSize: 10, color: "rgba(255,255,255,0.75)",
-                      textTransform: "uppercase", letterSpacing: "0.1em",
-                      display: "flex", alignItems: "center", gap: 6,
-                    }}
-                  >
-                    Close &#x2715;
-                  </button>
-                </div>
-              </div>
-
-              <div className="w" style={{ padding: `0 ${px}` }}>
-
-                {/* ENG */}
-                {panel === "eng" && (
-                  <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 640 }}>
-                    <p style={{ fontSize: 18, fontStyle: "italic", lineHeight: 1.8, color: t.muted }}>
-                      I build software for work and personal projects, ranging from enterprise systems to personal automation systems. Computer Science graduate from UGA, currently working at Infomedia in Atlanta.
-                    </p>
-                  </div>
-                )}
-
-                {/* MUSIC */}
-                {panel === "music" && (
-                  <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 620 }}>
-                    <p style={{ fontSize: 17, fontStyle: "italic", lineHeight: 1.8, color: t.muted, marginBottom: 28 }}>
-                      Concerts, guitars, and new and familiar artists on constant repeat. Music is always on.
-                    </p>
-                    <iframe
-                      src="https://open.spotify.com/embed/playlist/4ynAF5u8eruVcNJGGEA7R5?utm_source=generator&theme=0"
-                      width="100%" height="152" frameBorder={0}
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                      style={{ display: "block", borderRadius: 2 }}
-                    />
-                  </div>
-                )}
-
-                {/* SIDE QUESTS */}
-                {panel === "sports" && (
-                  <div style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 680 }}>
-                    <p style={{ fontSize: 17, fontStyle: "italic", lineHeight: 1.8, color: t.muted, marginBottom: 28 }}>
-                      Outside of work, I try to stay busy. There&apos;s always something on the go.
-                    </p>
-                    {SIDEQUESTS.map(s => (
-                      <div key={s.label} className="exp-row">
-                        <div style={{ ...mono, paddingTop: 3 }}>{s.label}</div>
-                        <div style={{ fontSize: 17, lineHeight: 1.75, color: t.ink }}>{s.text}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* ADVENTURE */}
-                {panel === "adventure" && (
-                  <div style={{ paddingTop: 64, paddingBottom: 64 }}>
-                    <PlacesSection darkMode={dm} />
-                  </div>
-                )}
-
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── HISTORY ── */}
-      <div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
-        <div className="w" style={{ padding: `56px ${px}` }}>
-          <div style={{ maxWidth: 720 }}>
-
-            <p style={{ ...mono, marginBottom: 32 }}>Experience</p>
-
-            {EXPERIENCE.map((e, i) => (
-              <div key={i} className="exp-row">
-                <div style={{ ...mono, paddingTop: 4 }}>{e.date}</div>
-                <div>
-                  <div style={{
-                    fontSize: 18, fontWeight: 500, marginBottom: 6, color: t.ink,
-                    display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "0 10px",
-                  }}>
-                    <span>{e.role}</span>
-                    <span style={{ color: t.muted, fontWeight: 400, fontSize: 16 }}>—</span>
-                    <a href={e.href} target="_blank" rel="noreferrer" className="co-link" style={{ fontSize: 17, fontWeight: 400 }}>
-                      {e.co} <span className="arrow-icon">&#x2197;</span>
-                    </a>
-                  </div>
-                  <div style={{ fontSize: 15.5, fontStyle: "italic", lineHeight: 1.75, color: t.muted }}>
-                    {e.desc}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Education */}
-            <div className="exp-row" style={{ borderBottom: `0.5px solid ${t.rule}` }}>
-              <div style={{ ...mono, paddingTop: 4 }}>{EDUCATION.date}</div>
-              <div>
-                <div style={{
-                  fontSize: 18, fontWeight: 500, marginBottom: 6, color: t.ink,
-                  display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "0 10px",
-                }}>
-                  <span>{EDUCATION.degree}</span>
-                  <span style={{ color: t.muted, fontWeight: 400, fontSize: 16 }}>—</span>
-                  <a href={EDUCATION.href} target="_blank" rel="noreferrer" className="co-link" style={{ fontSize: 17, fontWeight: 400 }}>
-                    {EDUCATION.school} <span className="arrow-icon">&#x2197;</span>
-                  </a>
-                </div>
-                <div style={{ fontSize: 15.5, fontStyle: "italic", color: t.muted }}>
-                  {EDUCATION.location} · Go Dawgs
-                </div>
-              </div>
-            </div>
-
-            {/* Stack */}
-            <p style={{ ...mono, marginTop: 48, marginBottom: 18 }}>Stack</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {STACK.map(s => (
-                <span key={s} style={{
-                  fontFamily: "'DM Mono', monospace", fontSize: 10,
-                  textTransform: "uppercase", letterSpacing: "0.06em",
-                  padding: "5px 12px", background: t.pill, color: t.ink, borderRadius: 2,
-                }}>
-                  {s}
-                </span>
-              ))}
-            </div>
-
-            {/* Projects */}
-            <p style={{ ...mono, marginTop: 48, marginBottom: 4 }}>Projects</p>
-            {PROJECTS.map(p => (
-              <div key={p.name} style={{ padding: "24px 0", borderTop: `0.5px solid ${t.rule}` }}>
-                <div style={{
-                  fontSize: 18, fontWeight: 500, marginBottom: 6, color: t.ink,
-                  display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "0 10px",
-                }}>
-                  <span>{p.name}</span>
-                  <span style={{ color: t.muted, fontWeight: 400, fontSize: 16 }}>—</span>
-                  <a href={p.href} target="_blank" rel="noreferrer" className="co-link" style={{ fontSize: 17, fontWeight: 400 }}>
-                    {p.link} <span className="arrow-icon">&#x2197;</span>
-                  </a>
-                </div>
-                <p style={{ fontSize: 15.5, fontStyle: "italic", lineHeight: 1.75, color: t.muted, marginBottom: 12 }}>
-                  {p.desc}
-                </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {p.tags.map(tag => (
-                    <span key={tag} style={{
-                      fontFamily: "'DM Mono', monospace", fontSize: 9.5,
-                      textTransform: "uppercase", letterSpacing: "0.06em",
-                      padding: "3px 9px", background: t.pill, color: t.muted, borderRadius: 2,
-                    }}>
-                      {tag}
-                    </span>
+          <nav className="list" aria-label="Notes">
+            {FOLDERS.map(folder => {
+              const items = results.filter(n => n.folder === folder);
+              if (!items.length) return null;
+              return (
+                <div key={folder}>
+                  <p className="mono folder">{folder}</p>
+                  {items.map(n => (
+                    <button
+                      key={n.id}
+                      className="item"
+                      onClick={() => open(n.id)}
+                      aria-current={active === n.id ? "page" : undefined}
+                      style={{ "--c": n.accent ? `var(--c-${n.accent})` : "var(--ink)" } as React.CSSProperties}
+                    >
+                      {active === n.id && (
+                        <motion.span layoutId="active-note" className="bg" transition={{ type: "spring", stiffness: 500, damping: 40 }} />
+                      )}
+                      <span className="item-title"><i />{n.title}</span>
+                      <span className="item-sub"><span className="mono">{n.meta}</span><span>{n.preview}</span></span>
+                    </button>
                   ))}
                 </div>
-              </div>
-            ))}
+              );
+            })}
+            {!results.length && <p className="empty">No notes match “{query}”.</p>}
+          </nav>
 
+          <div className="side-foot mono">© {new Date().getFullYear()} Michael Chen</div>
+        </aside>
+
+        {/* ── NOTE ── */}
+        <section className="pane" ref={paneRef}>
+          <div className="toolbar">
+            <button className="back" onClick={() => setView("list")}><ChevronLeft size={20} />Notes</button>
+            <div className="tools">
+              <button className={`icon${copied ? " copied" : ""}`} onClick={copyLink} aria-label="Copy link to this note">
+                {copied ? <Check size={15} /> : <Link2 size={15} />}
+              </button>
+              {ThemeBtn}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── CONTACT ── */}
-      <div style={{ borderBottom: `0.5px solid ${t.rule}` }}>
-        <div className="w" style={{ padding: `52px ${px}` }}>
-          <p style={{ fontSize: 17, fontStyle: "italic", color: t.muted, marginBottom: 22, lineHeight: 1.7 }}>
-            I&apos;m always happy to connect — about work, projects, tennis, travel, or literally anything else.
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 22 }}>
-            {[
-              { label: "michaelchendevs@gmail.com", href: "mailto:michaelchendevs@gmail.com" },
-              { label: "LinkedIn",                  href: "https://linkedin.com/in/michael-chen880/" },
-              { label: "Resume",                    href: "/MichaelChenResume.pdf" },
-            ].map(l => (
-              <a
-                key={l.label} href={l.href}
-                target={l.href.startsWith("http") ? "_blank" : undefined}
-                rel={l.href.startsWith("http") ? "noreferrer" : undefined}
-                style={{
-                  fontFamily: "'DM Mono', monospace", fontSize: 11.5,
-                  color: "#1855a3", textDecoration: "underline", textUnderlineOffset: 4,
-                  display: "inline-flex", alignItems: "center", gap: 4,
-                }}
-              >
-                {l.label} <span className="arrow-icon">&#x2197;</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      </div>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.article
+              key={active}
+              className="page"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3, ease }}
+            >
+              {active === "index" && (
+                <>
+                  <p className="mono eyebrow">Index</p>
+                  <h2 className="serif title">Michael Chen</h2>
+                  <p className="tldr">
+                    I&apos;m a{" "}
+                    <button style={{ "--c": "var(--c-eng)" } as React.CSSProperties} onClick={() => open("eng")}><Mark c="eng">software engineer</Mark></button>{" "}
+                    based in Atlanta — fuelled by{" "}
+                    <button style={{ "--c": "var(--c-music)" } as React.CSSProperties} onClick={() => open("music")}><Mark c="music" delay={500}>good music</Mark></button>,{" "}
+                    <button style={{ "--c": "var(--c-sports)" } as React.CSSProperties} onClick={() => open("sports")}><Mark c="sports" delay={900}>fun side quests</Mark></button>, and a{" "}
+                    <button style={{ "--c": "var(--c-adventure)" } as React.CSSProperties} onClick={() => open("adventure")}><Mark c="adventure" delay={1300}>restless need to explore</Mark></button>.
+                  </p>
+                  <div className="index">
+                    {TAGS.map(t => (
+                      <button key={t.id} onClick={() => open(t.id)} style={{ "--c": `var(--c-${t.id})` } as React.CSSProperties}>
+                        <span className="num">{t.num}</span>
+                        <span>
+                          <span className="lbl" style={{ display: "block" }}>{t.label}</span>
+                          <span className="mono" style={{ display: "block", marginTop: 5, fontSize: 9.5 }}>{t.desc}</span>
+                        </span>
+                        <ArrowRight size={17} />
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
 
-      {/* ── FOOTER ── */}
-      <div className="w" style={{
-        display: "flex", flexWrap: "wrap", justifyContent: "space-between",
-        alignItems: "center", gap: 8, padding: `18px ${px}`,
-      }}>
-        <p style={{ ...mono }}>© {new Date().getFullYear()} Michael Chen</p>
-      </div>
-    </main>
+              {active !== "index" && active !== "contact" && active !== "experience" && active !== "projects" && (() => {
+                const copy = PANEL_COPY[active as Accent];
+                return (
+                  <>
+                    <p className="mono eyebrow">{copy.eyebrow}</p>
+                    <h2 className="serif title">{copy.title}</h2>
+                    <p className="lede">{copy.intro}</p>
+                    {copy.details.length > 0 && (
+                      <div className="details">
+                        {copy.details.map((d, i) => (
+                          <span key={d}><span className="mono">{String(i + 1).padStart(2, "0")}</span>{d}</span>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+
+              {active === "eng" && (
+                <div className="body">
+                  <p style={{ marginTop: 30, fontSize: 18, fontStyle: "italic", lineHeight: 1.8, color: "var(--muted)" }}>
+                    Currently building core front-end and back-end systems for{" "}
+                    <Mark c="eng" type="underline">enterprise e-commerce platforms</Mark>, with side projects that lean practical: reservations, invoices, maps, signatures, and things people can actually use.
+                  </p>
+                  <p className="mono label">Common tools</p>
+                  <div className="chips">{STACK.slice(0, 12).map(s => <span className="chip" key={s}>{s}</span>)}</div>
+                  <button className="jump" onClick={() => open("projects")}>Projects <ArrowRight size={14} /></button>
+                  <button className="jump" onClick={() => open("experience")}>Experience <ArrowRight size={14} /></button>
+                </div>
+              )}
+
+              {active === "experience" && (
+                <>
+                  <p className="mono eyebrow">Work · 2023 — Now</p>
+                  <h2 className="serif title">Experience</h2>
+                  {EXPERIENCE.map(e => (
+                    <div className="row" key={e.co}>
+                      <div className="mono" style={{ paddingTop: 5 }}>{e.date}</div>
+                      <div>
+                        <h3>
+                          <span>{e.role}</span>
+                          <span style={{ color: "var(--muted)", fontWeight: 400 }}>—</span>
+                          <a href={e.href} target="_blank" rel="noreferrer">{e.co} ↗</a>
+                        </h3>
+                        <p className="desc">{marked(e.desc, e.mark, "eng")}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="row">
+                    <div className="mono" style={{ paddingTop: 5 }}>{EDUCATION.date}</div>
+                    <div>
+                      <h3>
+                        <span>{EDUCATION.degree}</span>
+                        <span style={{ color: "var(--muted)", fontWeight: 400 }}>—</span>
+                        <a href={EDUCATION.href} target="_blank" rel="noreferrer">{EDUCATION.school} ↗</a>
+                      </h3>
+                      <p className="desc">{EDUCATION.location} · <span className="hand" style={{ fontSize: 22, fontStyle: "normal", color: "#ba0c2f" }}>Go Dawgs</span></p>
+                    </div>
+                  </div>
+                  <p className="mono label">Stack</p>
+                  <div className="chips">{STACK.map(s => <span className="chip" key={s}>{s}</span>)}</div>
+                </>
+              )}
+
+              {active === "projects" && (
+                <>
+                  <p className="mono eyebrow">{PROJECTS.length} shipped</p>
+                  <h2 className="serif title">Projects</h2>
+                  {PROJECTS.map(p => (
+                    <div className="proj" key={p.name}>
+                      <a className="snap" href={p.href} target="_blank" rel="noreferrer" aria-label={`Open ${p.name}`}>
+                        {p.img ? <img src={p.img} alt={`${p.name} screenshot`} loading="lazy" /> : <span className="ph serif">Aa</span>}
+                      </a>
+                      <div>
+                        <h3>{p.name}</h3>
+                        <a className="lnk" href={p.href} target="_blank" rel="noreferrer">{p.link} <ArrowUpRight size={14} /></a>
+                        <p>{p.desc}</p>
+                        <div className="chips">{p.tags.map(t => <span className="chip" key={t}>{t}</span>)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {active === "music" && (
+                <>
+                  <div className="sheet" style={{ padding: 10 }}>
+                    <iframe
+                      title="Spotify playlist"
+                      src="https://open.spotify.com/embed/playlist/4ynAF5u8eruVcNJGGEA7R5?utm_source=generator&theme=0"
+                      width="100%" height="352" frameBorder={0}
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      style={{ display: "block", borderRadius: 12 }}
+                    />
+                  </div>
+                  <p className="mono label">Usual ingredients</p>
+                  <div className="chips">
+                    {["Live shows", "Guitar", "Long walks", "New releases", "Old favorites", "Kitchen playlists"].map(item => (
+                      <span className="chip" key={item}>{item}</span>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {active === "sports" && (
+                <div style={{ marginTop: 36 }}>
+                  {SIDEQUESTS.map(s => {
+                    const isDone = !!done[s.label];
+                    return (
+                      <button
+                        key={s.label}
+                        role="checkbox"
+                        aria-checked={isDone}
+                        className="check"
+                        onClick={() => setDone(d => ({ ...d, [s.label]: !d[s.label] }))}
+                      >
+                        <span className="box">{isDone && <Check size={14} strokeWidth={3} />}</span>
+                        <span><b>{s.label}</b> — {s.text}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {active === "adventure" && (
+                <>
+                  <p className="hand margin" style={{ marginTop: 26 }}>all pics taken by me :D</p>
+                  <div className="sheet"><PlacesSection /></div>
+                </>
+              )}
+
+              {active === "contact" && (
+                <>
+                  <p className="mono eyebrow" style={{ color: "var(--c-eng)" }}>Pinned</p>
+                  <h2 className="serif title">Contact</h2>
+                  <p className="lede">{CONTACT_LINE}</p>
+                  <div className="links" style={{ marginTop: 32 }}>
+                    <a href={`mailto:${EMAIL}`}>{EMAIL} <ArrowUpRight size={18} /></a>
+                    <a href="https://linkedin.com/in/michael-chen880/" target="_blank" rel="noreferrer">LinkedIn <ArrowUpRight size={18} /></a>
+                    <a href="/MichaelChenResume.pdf" target="_blank" rel="noreferrer">Resume <ArrowUpRight size={18} /></a>
+                  </div>
+                </>
+              )}
+
+              <nav className="pager" aria-label="More notes">
+                {prev && (
+                  <button onClick={() => open(prev.id)}>
+                    <span className="mono"><ArrowLeft size={12} /> Previous</span>
+                    {prev.title}
+                  </button>
+                )}
+                {next && (
+                  <button onClick={() => open(next.id)}>
+                    <span className="mono">Next <ArrowRight size={12} /></span>
+                    {next.title}
+                  </button>
+                )}
+              </nav>
+            </motion.article>
+          </AnimatePresence>
+        </section>
+      </main>
+    </ThemeCtx.Provider>
   );
 }
