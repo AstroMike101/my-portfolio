@@ -117,7 +117,7 @@ const PANEL_COPY: Record<Accent, { eyebrow: string; title: string; intro: string
   sports: {
     eyebrow: "Side quests",
     title: "Outside of work.",
-    intro: "Mostly tennis and the gym, plus film, collecting, and taking photos.",
+    intro: "Outside of work I try to keep the week balanced: something competitive, something physical, and something just for me. Right now that's tennis, basketball and lifting, film, and a growing camera roll.",
     details: [],
   },
   adventure: {
