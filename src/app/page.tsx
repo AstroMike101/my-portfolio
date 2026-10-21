@@ -85,7 +85,7 @@ const PROJECTS = [
     name: "Signature Studio",
     href: "https://signature-studio-nine.vercel.app/",
     link: "signature-studio",
-    img: null,
+    img: "/images/sigstudio.jpg",
     desc: "Interactive tool for designing custom signatures. Handwriting-based fonts, structural variations, and live previews powered by opentype.js.",
     tags: ["Next.js", "opentype.js", "Tailwind"],
   },
