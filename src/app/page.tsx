@@ -116,12 +116,12 @@ const PANEL_COPY: Record<Accent, { eyebrow: string; title: string; intro: string
   },
   sports: {
     eyebrow: "Side quests",
-    title: "Outside of work.",
+    title: "Off the clock.",
     intro: "Outside of work I try to keep the week balanced: something competitive, something physical, and something just for me. Right now that's tennis, basketball and lifting, film, and a growing camera roll.",
     details: [],
   },
   adventure: {
-    eyebrow: "Travel",
+    eyebrow: "Adventure",
     title: "Places I've been.",
     intro: "A few photos from trips and cities I've spent time in.",
     details: [],
@@ -146,9 +146,9 @@ const NOTES: Note[] = [
   { id: "experience", folder: "Work",          title: "Experience",            accent: "eng",       meta: "2023 – Now",     preview: "Infomedia · CoreForceTech · Kohl's Corporate · University of Georgia", keywords: EXPERIENCE.map(e => e.desc).join(" ") + " uga education stack" },
   { id: "projects",   folder: "Work",          title: "Projects",              accent: "eng",       meta: `${PROJECTS.length} shipped`, preview: PROJECTS.map(p => p.name).join(" · "), keywords: PROJECTS.map(p => p.desc + p.tags.join(" ")).join(" ") },
   { id: "resume",     folder: "Work",          title: "Résumé",                accent: "eng",       meta: "PDF",            preview: "Education · Technical Skills · Experience · Projects", keywords: RESUME.experience.flatMap(e => e.bullets).join(" ") + RESUME.skills.map(k => k.items).join(" ") + " resume cv" },
-  { id: "music",      folder: "Off the clock", title: "Music Lover",           accent: "music",     meta: "Music",          preview: PANEL_COPY.music.intro, keywords: "spotify playlist concerts guitar" },
-  { id: "sports",     folder: "Off the clock", title: "Side Quest Enthusiast", accent: "sports",    meta: "Side quests",    preview: PANEL_COPY.sports.intro, keywords: SIDEQUESTS.map(s => s.label + " " + s.text).join(" ") },
-  { id: "adventure",  folder: "Off the clock", title: "Adventure Seeker",      accent: "adventure", meta: "Travel",         preview: PANEL_COPY.adventure.intro, keywords: places.map(p => p.name).join(" ") + " travel photos" },
+  { id: "music",      folder: "Off the clock", title: "Music",                 accent: "music",     meta: "",               preview: PANEL_COPY.music.intro, keywords: "spotify playlist concerts guitar" },
+  { id: "sports",     folder: "Off the clock", title: "Side Quests",           accent: "sports",    meta: "",               preview: PANEL_COPY.sports.intro, keywords: SIDEQUESTS.map(s => s.label + " " + s.text).join(" ") },
+  { id: "adventure",  folder: "Off the clock", title: "Adventure",             accent: "adventure", meta: "",               preview: PANEL_COPY.adventure.intro, keywords: places.map(p => p.name).join(" ") + " travel photos" },
 ];
 
 // Reading order for prev/next and the arrow keys.
@@ -592,7 +592,7 @@ export default function HomePage() {
                         <motion.span layoutId="active-note" className="bg" transition={{ type: "spring", stiffness: 500, damping: 40 }} />
                       )}
                       <span className="item-title"><i />{n.title}</span>
-                      <span className="item-sub"><span className="mono">{n.meta}</span><span>{n.preview}</span></span>
+                      <span className="item-sub">{n.meta && <span className="mono">{n.meta}</span>}<span>{n.preview}</span></span>
                     </button>
                   ))}
                 </div>

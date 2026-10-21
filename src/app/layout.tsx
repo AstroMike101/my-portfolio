@@ -10,33 +10,25 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
+  metadataBase: new URL("https://michaelchen.live"),
   title: "Michael Chen | Portfolio",
   description:
-    "A collection of my projects, design work, and development experience - built with care and creativity.",
+    "A collection of my projects, design work, and development experience, built with care and creativity.",
   openGraph: {
     title: "Michael Chen | Portfolio",
     description:
-      "A collection of my projects, design work, and development experience - built with care and creativity.",
+      "A collection of my projects, design work, and development experience, built with care and creativity.",
     url: "https://michaelchen.live", 
     siteName: "Michael Chen Portfolio",
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: "https://michaelchen.live/images/og-image1.png", // 
-        width: 1200,
-        height: 630,
-        alt: "Michael Chen - Software Engineer Portfolio",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Michael Chen | Portfolio",
     description:
       "A collection of my projects, design work, and development experience, built with care and creativity.",
-    images: ["https://michaelchen.live/images/og-image.png"], 
   },
 };
 

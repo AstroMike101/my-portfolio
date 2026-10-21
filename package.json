@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.2.6",
+    "@fontsource/dm-mono": "^5.2.6",
+    "@fontsource/eb-garamond": "^5.2.6",
     "d3-geo": "^3.1.1",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.539.0",
