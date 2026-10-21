@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { places } from "@/data/places";
 import MapSketch from "@/components/MapSketch";
+import Passport from "@/components/Passport";
 
 // Resting pose for the cards under the top one, so the pile looks hand-placed.
 const TILT = [-2, 4, -5];
 
-export default function PlacesSection() {
-  const [index, setIndex] = useState(0);
+// `jump` lets the page open the stack on a specific photo (e.g. from search);
+// `key` changes on every request so repeating the same place still fires.
+export default function PlacesSection({ jump }: { jump?: { index: number; key: number } }) {
+  const [index, setIndex] = useState(jump?.index ?? 0);
   const [dir, setDir]     = useState(1);
+  const [highlight, setHighlight] = useState<number[] | null>(null);
 
   const n = places.length;
   const current = places[index];
@@ -24,6 +28,10 @@ export default function PlacesSection() {
     setDir(i > index ? 1 : -1);
     setIndex(i);
   };
+
+  useEffect(() => {
+    if (jump) setIndex(jump.index);
+  }, [jump]);
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     if (Math.abs(info.offset.x) > 80 || Math.abs(info.velocity.x) > 500) {
@@ -124,7 +132,8 @@ export default function PlacesSection() {
         </div>
       </div>
       <div style={{ gridColumn: "1 / -1" }}>
-        <MapSketch index={index} onPick={pick} />
+        <MapSketch index={index} onPick={pick} highlight={highlight} />
+        <Passport index={index} onPick={pick} onHover={setHighlight} />
       </div>
     </div>
   );

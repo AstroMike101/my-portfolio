@@ -119,7 +119,32 @@ const SKYLINE_FILLS = [
   { d: "M140 120 V42 C140 36 158 36 158 42 V120 Z", fill: "#6f9fc8", opacity: 0.28 },
 ];
 
-export function Skyline({ className, delay = 0.8 }: { className?: string; delay?: number }) {
+// Window grids per building (x0, x1, y0, y1); skipped columns sit on mullion lines.
+const WINDOW_AREAS = [
+  { x: [143, 155], y: [50, 114] },                // Westin
+  { x: [173, 189], y: [56, 114], skip: 181 },     // One Atlantic Center
+  { x: [211, 235], y: [48, 114], skip: 223 },     // Bank of America Plaza
+  { x: [255, 273], y: [66, 114] },                // Truist Plaza
+  { x: [293, 311], y: [62, 114] },                // 191 Peachtree
+  { x: [329, 343], y: [91, 114] },
+  { x: [355, 373], y: [103, 114] },
+  { x: [79, 121], y: [108, 114] },                // Capitol wings
+];
+
+// Deterministic scatter so the same windows are lit on every visit.
+const WINDOWS = WINDOW_AREAS.flatMap(({ x, y, skip }, b) => {
+  const out: { x: number; y: number; on: boolean }[] = [];
+  for (let wy = y[0]; wy <= y[1] - 3; wy += 7) {
+    for (let wx = x[0]; wx <= x[1] - 2; wx += 5) {
+      if (skip && Math.abs(wx + 1 - skip) < 2.5) continue;
+      const h = Math.sin(wx * 12.9898 + wy * 78.233 + b * 37.719) * 43758.5453;
+      out.push({ x: wx, y: wy, on: h - Math.floor(h) < 0.38 });
+    }
+  }
+  return out.filter(w => w.on);
+});
+
+export function Skyline({ className, delay = 0.8, lit = false }: { className?: string; delay?: number; lit?: boolean }) {
   const step = 0.09;
   const fillsAt = delay + SKYLINE_STROKES.length * step + 0.5;
   return (
@@ -131,6 +156,16 @@ export function Skyline({ className, delay = 0.8 }: { className?: string; delay?
         </filter>
       </defs>
       <g filter="url(#wobble-skyline)">
+        {WINDOWS.map((w, i) => (
+          <motion.rect
+            key={i}
+            x={w.x} y={w.y} width={2.2} height={3.2} rx={0.4}
+            fill="#ffd36b"
+            initial={false}
+            animate={{ opacity: lit ? 0.95 : 0 }}
+            transition={{ duration: 0.4, delay: lit ? fillsAt * 0.3 + (i % 17) * 0.06 : 0 }}
+          />
+        ))}
         {SKYLINE_FILLS.map(f => (
           <motion.path
             key={f.d}

@@ -193,6 +193,15 @@ const fade: Variants = {
   exit: { opacity: 0, transition: { duration: 0.15 } },
 };
 
+// Paper tabs on the page edge; each opens the first note of its group.
+const TABS: { label: string; color: string; group: NoteId[] }[] = [
+  { label: "Index",       color: "var(--ink)",         group: ["index", "contact"] },
+  { label: "Work",        color: "var(--c-eng)",       group: ["eng", "experience", "projects", "resume"] },
+  { label: "Music",       color: "var(--c-music)",     group: ["music"] },
+  { label: "Side Quests", color: "var(--c-sports)",    group: ["sports"] },
+  { label: "Adventure",   color: "var(--c-adventure)", group: ["adventure"] },
+];
+
 const ThemeCtx = createContext(false);
 
 function Mark({ c, type = "highlight", delay = 0, children }: {
@@ -236,6 +245,9 @@ export default function HomePage() {
   const [view, setView]     = useState<"list" | "note">("list");
   const [query, setQuery]   = useState("");
   const [copied, setCopied] = useState(false);
+  const [night, setNight]   = useState(false);
+  const [ball, setBall]     = useState<number | null>(null);
+  const [placeJump, setPlaceJump] = useState<{ index: number; key: number }>();
   const [done, setDone]     = useState<Record<string, boolean>>({});
   const [dir, setDir]       = useState(1);
   const reduce = useReducedMotion();
@@ -256,6 +268,32 @@ export default function HomePage() {
     setActive(id);
     setView("note");
     paneRef.current?.scrollTo({ top: 0 });
+  };
+
+  // The skyline lights up after dark in Atlanta.
+  useEffect(() => {
+    const check = () => {
+      const hour = Number(new Date().toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: "America/New_York" }));
+      setNight(hour >= 20 || hour < 6);
+    };
+    check();
+    const id = setInterval(check, 10 * 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Search easter eggs: "tennis" sends a ball across the page; a city name opens that photo.
+  const onSearch = (value: string) => {
+    setQuery(value);
+    const q = value.trim().toLowerCase();
+    if (q === "tennis" && !reduce) setBall(Date.now());
+    const hit = places.findIndex(p => {
+      const city = p.name.split(",")[0].toLowerCase();
+      return q.length >= 4 && (city === q || city.replace(/ city$/, "") === q);
+    });
+    if (hit !== -1) {
+      setPlaceJump({ index: hit, key: Date.now() });
+      open("adventure");
+    }
   };
 
   // Deep links: /#projects opens that note.
@@ -511,7 +549,7 @@ export default function HomePage() {
           .doodle { position: absolute; top: 18px; right: clamp(14px, 4vw, 40px); width: 62px; height: 62px; transform: rotate(-8deg); pointer-events: none; }
           .page .title { padding-right: 58px; }
           .skyline { display: block; width: 100%; height: auto; margin-top: 34px; color: var(--ink); }
-          @media (min-width: 1340px) {
+          @media (min-width: 1440px) {
             .doodle { top: 70px; right: -150px; width: 118px; height: 118px; }
             .page .title { padding-right: 0; }
           }
@@ -540,8 +578,25 @@ export default function HomePage() {
           .cv li::marker { color: var(--a); }
           .num-hi { font-weight: 500; color: var(--a); }
 
+          /* Notebook tabs */
+          .tabs { position: fixed; right: 0; top: 96px; z-index: 20; display: none; flex-direction: column; gap: 6px; }
+          .tab {
+            writing-mode: vertical-rl; padding: 16px 8px 16px 9px;
+            border-radius: 10px 0 0 10px; border: 1px solid color-mix(in srgb, var(--c) 35%, var(--rule)); border-right: none;
+            background: var(--grain), color-mix(in srgb, var(--c) 14%, var(--tile)); background-size: 180px 180px, auto;
+            font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--c);
+            box-shadow: -2px 2px 6px -3px rgba(0,0,0,.18);
+            transform: translateX(8px); transition: transform .25s cubic-bezier(.22,1,.36,1), background .2s;
+          }
+          .tab:hover { transform: translateX(2px); }
+          .tab.on { transform: translateX(0); background: var(--grain), color-mix(in srgb, var(--c) 26%, var(--tile)); background-size: 180px 180px, auto; }
+
+          /* Tennis easter egg */
+          .ball { position: fixed; left: 0; top: 18vh; z-index: 60; pointer-events: none; }
+
           @media (min-width: 861px) {
             .app { grid-template-columns: 320px minmax(0, 1fr); }
+            .tabs { display: flex; }
           }
           @media (max-width: 860px) {
             .app[data-view="list"] .pane { display: none; }
@@ -566,7 +621,7 @@ export default function HomePage() {
             <input
               ref={searchRef}
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={e => onSearch(e.target.value)}
               placeholder="Search notes"
               aria-label="Search notes"
             />
@@ -645,7 +700,7 @@ export default function HomePage() {
                     <button style={{ "--c": "var(--c-sports)" } as React.CSSProperties} onClick={() => open("sports")}><Mark c="sports" delay={900}>fun side quests</Mark></button>, and a{" "}
                     <button style={{ "--c": "var(--c-adventure)" } as React.CSSProperties} onClick={() => open("adventure")}><Mark c="adventure" delay={1300}>restless need to explore</Mark></button>.
                   </p>
-                  <Skyline className="skyline" delay={2} />
+                  <Skyline className="skyline" delay={2} lit={dm || night} />
                   <div className="index">
                     {TAGS.map(t => (
                       <button key={t.id} onClick={() => open(t.id)} style={{ "--c": `var(--c-${t.id})` } as React.CSSProperties}>
@@ -783,7 +838,7 @@ export default function HomePage() {
               {active === "adventure" && (
                 <>
                   <p className="hand margin" style={{ marginTop: 26 }}>all pics taken by me :D</p>
-                  <div className="sheet"><PlacesSection /></div>
+                  <div className="sheet"><PlacesSection jump={placeJump} /></div>
                 </>
               )}
 
@@ -863,6 +918,42 @@ export default function HomePage() {
             </motion.div>
           </AnimatePresence>
         </section>
+
+        <nav className="tabs" aria-label="Sections">
+          {TABS.map(t => (
+            <button
+              key={t.label}
+              className={`tab${t.group.includes(active) ? " on" : ""}`}
+              style={{ "--c": t.color } as React.CSSProperties}
+              onClick={() => open(t.group[0])}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        <AnimatePresence>
+          {ball && (
+            <motion.div
+              key={ball}
+              className="ball"
+              aria-hidden="true"
+              initial={{ x: "-8vw" }}
+              animate={{ x: "108vw", rotate: 720 }}
+              transition={{ duration: 2.6, ease: "linear" }}
+              onAnimationComplete={() => setBall(null)}
+            >
+              <motion.svg
+                viewBox="0 0 40 40" width="34" height="34"
+                animate={{ y: [0, 300, 110, 300, 190, 300, 245, 300] }}
+                transition={{ duration: 2.6, times: [0, .2, .35, .5, .62, .75, .86, 1], ease: ["easeIn", "easeOut", "easeIn", "easeOut", "easeIn", "easeOut", "easeIn"] }}
+              >
+                <circle cx="20" cy="20" r="18" fill="#d6e23a" stroke="#9aa61a" strokeWidth="1.5" />
+                <path d="M6 9 C14 15 14 25 6 31 M34 9 C26 15 26 25 34 31" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
+              </motion.svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </ThemeCtx.Provider>
   );

@@ -11,7 +11,7 @@ const W = 640;
 // Crop to the band where the photos actually are (North America → East Asia).
 const FRAME = { type: "MultiPoint" as const, coordinates: [[-128, 12], [146, 12], [-128, 62], [146, 62]] };
 
-export default function MapSketch({ index, onPick }: { index: number; onPick: (i: number) => void }) {
+export default function MapSketch({ index, onPick, highlight }: { index: number; onPick: (i: number) => void; highlight?: number[] | null }) {
   const { land, points, viewBox } = useMemo(() => {
     const topo = land110 as unknown as Topology<{ land: GeometryCollection }>;
     const projection = geoNaturalEarth1().fitWidth(W, FRAME);
@@ -34,7 +34,7 @@ export default function MapSketch({ index, onPick }: { index: number; onPick: (i
         .mapsketch .land { fill: url(#hatch); stroke: var(--muted); stroke-width: .9; stroke-linejoin: round; }
         .mapsketch .pin { cursor: pointer; }
         .mapsketch .dot { fill: var(--tile); stroke: var(--ink); stroke-width: 1.2; transition: fill .2s; }
-        .mapsketch .pin:hover .dot { fill: var(--c-adventure); }
+        .mapsketch .pin:hover .dot, .mapsketch .dot.lit { fill: var(--c-adventure); stroke: var(--c-adventure); }
         .mapsketch .here { fill: var(--c-adventure); }
         .mapsketch .ring { fill: none; stroke: var(--c-adventure); stroke-width: 1.4; transform-box: fill-box; transform-origin: center; animation: mapping 1.8s ease-out infinite; }
         @keyframes mapping { from { transform: scale(1); opacity: .9; } to { transform: scale(3.2); opacity: 0; } }
@@ -54,7 +54,7 @@ export default function MapSketch({ index, onPick }: { index: number; onPick: (i
         {points.map(([x, y], i) => (
           <g key={places[i].name} className="pin" onClick={() => onPick(i)}>
             <title>{places[i].name}</title>
-            <circle className="dot" cx={x} cy={y} r={i === index ? 0 : 3} />
+            <circle className={`dot${highlight?.includes(i) ? " lit" : ""}`} cx={x} cy={y} r={i === index ? 0 : highlight?.includes(i) ? 4.2 : 3} />
             <circle cx={x} cy={y} r={9} fill="transparent" />
           </g>
         ))}
