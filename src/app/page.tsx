@@ -111,7 +111,7 @@ const PANEL_COPY: Record<Accent, { eyebrow: string; title: string; intro: string
   music: {
     eyebrow: "Music",
     title: "Always something playing.",
-    intro: "Concerts when I can, guitar when I have time, and a few new artists most weeks. Here's what's on repeat.",
+    intro: "Music is the constant in my day: on the drive in, while I cook, and when I wind down at night. Here's what's been on repeat.",
     details: [],
   },
   sports: {
