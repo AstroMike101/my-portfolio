@@ -37,7 +37,7 @@ export const RESUME = {
         "Engineered and maintained a .NET C# Windows service and WPF GUI to automate data collection and uploads to our cloud, streamlining data flow and enabling real-time activation of dispatch systems, resulting in a 30% improvement in processing efficiency and a 20% increase in operational performance.",
         "Spearheaded the deployment of streamlined software installations for nationwide public safety agencies, utilizing SQL, XML, and JSON to create tailored configurations, improving integration success rate by 25% and reducing installation time by 40%.",
         "Collaborated on a Java web service hosted on WildFly, integrated with Apache, and deployed in an AWS environment, developing REST APIs for seamless data exchange, contributing to a 15% increase in real-time data accuracy and improving client system uptime by 10%.",
-        "Led end-to-end implementations for 20+ concurrent clients—from customized deployments to mission-critical support, ensuring 99%+ system uptime and proactive communication.",
+        "Led end-to-end implementations for 20+ concurrent clients, from customized deployments to mission-critical support, ensuring 99%+ system uptime and proactive communication.",
       ],
     },
     {

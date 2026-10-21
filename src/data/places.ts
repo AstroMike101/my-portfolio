@@ -16,7 +16,7 @@ export const places: Place[] = [
         name: "Atlanta, GA",
         coords: [33.7490, -84.3880],
         img: "/images/atlanta.jpg",
-        desc: "Home base — southern hospitality, music, and vibrant culture."
+        desc: "Home base: southern hospitality, music, and vibrant culture."
     },
     {
         name: "Chicago, IL",
@@ -77,7 +77,7 @@ export const places: Place[] = [
         name: "Seaside, FL",
         coords: [30.3190, -86.1375],
         img: "/images/seaside.jpg",
-        desc: "Seaside, Florida — pastel beach houses, emerald waters, and Gulf Coast charm."
+        desc: "Seaside, Florida: pastel beach houses, emerald waters, and Gulf Coast charm."
     },
     {
         name: "Tokyo, Japan",
@@ -119,12 +119,12 @@ export const places: Place[] = [
         name: "Mexico City, Mexico",
         coords: [19.4326, -99.1332],
         img: "/images/mexicocity.jpg",
-        desc: "Vibrant capital of Mexico — history, street food, museums, and endless energy."
+        desc: "Vibrant capital of Mexico, full of history, street food, museums, and endless energy."
     },
     {
         name: "Minneapolis, MN",
         coords: [44.9778, -93.2650],
         img: "/images/minnesota.jpg",
-        desc: "Land of 10,000 lakes — friendly people, cold winters, and summer at the lake."
+        desc: "Land of 10,000 lakes: friendly people, cold winters, and summer at the lake."
     }
 ];

@@ -18,14 +18,14 @@ const EMAIL = "michaelchendevs@gmail.com";
 
 const EXPERIENCE = [
   {
-    date: "Jul 2025 — Now",
+    date: "Jul 2025 – Now",
     role: "Software Engineer",
     co: "Infomedia",
     href: "https://www.infomedia.com.au/",
-    desc: "Building core front-end and back-end systems for enterprise e-commerce platforms — Ford, Toyota, Honda, BMW, and VW dealer networks. Full-stack across Vue.js, C#, .NET, and SQL Server.",
+    desc: "Building core front-end and back-end systems for enterprise e-commerce platforms serving Ford, Toyota, Honda, BMW, and VW dealer networks. Full-stack across Vue.js, C#, .NET, and SQL Server.",
   },
   {
-    date: "Jun 2024 — Jul 2025",
+    date: "Jun 2024 – Jul 2025",
     role: "Software Engineer",
     co: "CoreForceTech",
     href: "https://www.coreforcetech.com",
@@ -33,7 +33,7 @@ const EXPERIENCE = [
     mark: { text: "20+ clients", type: "underline" as const },
   },
   {
-    date: "Jun 2023 — Aug 2023",
+    date: "Jun 2023 – Aug 2023",
     role: "Software Engineer Intern",
     co: "Kohl's Corporate",
     href: "https://corporate.kohls.com/",
@@ -43,7 +43,7 @@ const EXPERIENCE = [
 ];
 
 const EDUCATION = {
-  date: "Aug 2020 — May 2024",
+  date: "Aug 2020 – May 2024",
   degree: "B.S. Computer Science",
   school: "University of Georgia",
   href: "https://www.uga.edu",
@@ -78,7 +78,7 @@ const PROJECTS = [
     href: "https://apps.apple.com/us/app/billr-invoice-tracker/id6761347420",
     link: "App Store",
     img: "/images/billr1.png",
-    desc: "iOS invoicing app for freelancers and small businesses. Log hours, flat fees, and expenses — generate PDF invoices with your logo and track what you're owed from your iPhone.",
+    desc: "iOS invoicing app for freelancers and small businesses. Log hours, flat fees, and expenses, then generate PDF invoices with your logo and track what you're owed from your iPhone.",
     tags: ["Swift", "SwiftUI", "Supabase", "RevenueCat"],
   },
   {
@@ -97,7 +97,7 @@ const SIDEQUESTS = [
   { label: "Music",      text: "Concerts, guitars, and discovering new artists on repeat. There's always something playing whether I'm cooking, commuting, cleaning, or just straight up laying in bed." },
   { label: "Film",       text: "A fan of films with subtext, ambiguity, and enough restraint to let the audience connect the dots." },
   { label: "Outdoors",   text: "Hikes, green spaces, and good coffee outside. Anything that gets me outside for a few hours." },
-  { label: "Collecting", text: "I like collecting things with stories behind them — pieces with interesting origins that mean something to me or the people I give them to." },
+  { label: "Collecting", text: "I like collecting things with stories behind them: pieces with interesting origins that mean something to me or the people I give them to." },
   { label: "Capturing",  text: "Snapping little vignettes of life and friends." },
 ];
 
@@ -135,15 +135,15 @@ const TAGS: { id: Accent; label: string; desc: string; num: string }[] = [
   { id: "adventure", label: "adventure seeker",      desc: "places, photos, coordinates",      num: "04" },
 ];
 
-const CONTACT_LINE = "I'm always happy to connect — about work, projects, tennis, travel, or literally anything else.";
+const CONTACT_LINE = "I'm always happy to connect about work, projects, tennis, travel, or literally anything else.";
 
 type Note = { id: NoteId; folder: string; title: string; accent?: Accent; meta: string; preview: string; keywords: string };
 
 const NOTES: Note[] = [
-  { id: "index",      folder: "Pinned",        title: "Michael Chen",          meta: "Index",          preview: "I'm a software engineer based in Atlanta — fuelled by good music, fun side quests, and a restless need to explore.", keywords: "about atlanta" },
+  { id: "index",      folder: "Pinned",        title: "Michael Chen",          meta: "Index",          preview: "I'm a software engineer based in Atlanta, fuelled by good music, fun side quests, and a restless need to explore.", keywords: "about atlanta" },
   { id: "contact",    folder: "Pinned",        title: "Contact",               meta: "Email",          preview: CONTACT_LINE, keywords: `email linkedin resume ${EMAIL}` },
   { id: "eng",        folder: "Work",          title: "Software Engineer",     accent: "eng",       meta: "Build mode",     preview: PANEL_COPY.eng.intro, keywords: STACK.join(" ") },
-  { id: "experience", folder: "Work",          title: "Experience",            accent: "eng",       meta: "2023 — Now",     preview: "Infomedia · CoreForceTech · Kohl's Corporate · University of Georgia", keywords: EXPERIENCE.map(e => e.desc).join(" ") + " uga education stack" },
+  { id: "experience", folder: "Work",          title: "Experience",            accent: "eng",       meta: "2023 – Now",     preview: "Infomedia · CoreForceTech · Kohl's Corporate · University of Georgia", keywords: EXPERIENCE.map(e => e.desc).join(" ") + " uga education stack" },
   { id: "projects",   folder: "Work",          title: "Projects",              accent: "eng",       meta: `${PROJECTS.length} shipped`, preview: PROJECTS.map(p => p.name).join(" · "), keywords: PROJECTS.map(p => p.desc + p.tags.join(" ")).join(" ") },
   { id: "resume",     folder: "Work",          title: "Résumé",                accent: "eng",       meta: "PDF",            preview: "Education · Technical Skills · Experience · Projects", keywords: RESUME.experience.flatMap(e => e.bullets).join(" ") + RESUME.skills.map(k => k.items).join(" ") + " resume cv" },
   { id: "music",      folder: "Off the clock", title: "Music Lover",           accent: "music",     meta: "Music",          preview: PANEL_COPY.music.intro, keywords: "spotify playlist concerts guitar" },
@@ -640,7 +640,7 @@ export default function HomePage() {
                   <p className="tldr">
                     I&apos;m a{" "}
                     <button style={{ "--c": "var(--c-eng)" } as React.CSSProperties} onClick={() => open("eng")}><Mark c="eng">software engineer</Mark></button>{" "}
-                    based in Atlanta — fuelled by{" "}
+                    based in Atlanta, fuelled by{" "}
                     <button style={{ "--c": "var(--c-music)" } as React.CSSProperties} onClick={() => open("music")}><Mark c="music" delay={500}>good music</Mark></button>,{" "}
                     <button style={{ "--c": "var(--c-sports)" } as React.CSSProperties} onClick={() => open("sports")}><Mark c="sports" delay={900}>fun side quests</Mark></button>, and a{" "}
                     <button style={{ "--c": "var(--c-adventure)" } as React.CSSProperties} onClick={() => open("adventure")}><Mark c="adventure" delay={1300}>restless need to explore</Mark></button>.
@@ -694,7 +694,7 @@ export default function HomePage() {
 
               {active === "experience" && (
                 <>
-                  <p className="mono eyebrow">Work · 2023 — Now</p>
+                  <p className="mono eyebrow">Work · 2023 – Now</p>
                   <h2 className="serif title">Experience</h2>
                   {EXPERIENCE.map(e => (
                     <div className="row" key={e.co}>
@@ -702,7 +702,7 @@ export default function HomePage() {
                       <div>
                         <h3>
                           <span>{e.role}</span>
-                          <span style={{ color: "var(--muted)", fontWeight: 400 }}>—</span>
+                          <span style={{ color: "var(--muted)", fontWeight: 400 }}>·</span>
                           <a href={e.href} target="_blank" rel="noreferrer">{e.co} ↗</a>
                         </h3>
                         <p className="desc">{marked(e.desc, e.mark, "eng")}</p>
@@ -714,7 +714,7 @@ export default function HomePage() {
                     <div>
                       <h3>
                         <span>{EDUCATION.degree}</span>
-                        <span style={{ color: "var(--muted)", fontWeight: 400 }}>—</span>
+                        <span style={{ color: "var(--muted)", fontWeight: 400 }}>·</span>
                         <a href={EDUCATION.href} target="_blank" rel="noreferrer">{EDUCATION.school} ↗</a>
                       </h3>
                       <p className="desc">{EDUCATION.location} · <span className="hand" style={{ fontSize: 22, fontStyle: "normal", color: "#ba0c2f" }}>Go Dawgs</span></p>
@@ -773,7 +773,7 @@ export default function HomePage() {
                         onClick={() => setDone(d => ({ ...d, [s.label]: !d[s.label] }))}
                       >
                         <span className="box">{isDone && <Check size={14} strokeWidth={3} />}</span>
-                        <span><b>{s.label}</b> — {s.text}</span>
+                        <span><b>{s.label}</b>: {s.text}</span>
                       </button>
                     );
                   })}
