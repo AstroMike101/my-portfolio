@@ -82,14 +82,6 @@ export default function Passport({ index, onPick, onHover }: {
         .stamp .c { font-size: 11px; font-weight: 500; line-height: 1.2; max-width: 92%; }
         .stamp.circle .c { font-size: 9px; letter-spacing: .04em; max-width: 80%; }
         .stamp .n { font-size: 9px; opacity: .8; }
-        .stamp .tip {
-          position: absolute; top: calc(100% + 8px); left: 50%; z-index: 4; width: max-content; max-width: 220px;
-          transform: translateX(-50%) rotate(calc(-1 * var(--tilt)));
-          padding: 6px 10px; border-radius: 8px; background: var(--ink); color: var(--bg);
-          font-family: 'EB Garamond', serif; font-size: 14px; text-transform: none; letter-spacing: 0; line-height: 1.35;
-          opacity: 0; pointer-events: none; transition: opacity .15s;
-        }
-        .stamp:hover .tip, .stamp:focus-visible .tip { opacity: 1; }
       `}</style>
       <p className="mono">Passport · {COUNTRIES.length} countries</p>
       <div className="stamps">
@@ -113,7 +105,6 @@ export default function Passport({ index, onPick, onHover }: {
             {k % 3 === 1 && (
               <svg className="post" viewBox="0 0 32 18" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d={POSTMARK} /></svg>
             )}
-            <span className="tip">{indices.map(i => places[i].name.split(",")[0]).join(" · ")}</span>
           </button>
         ))}
       </div>
