@@ -1,16 +1,18 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { annotate } from "rough-notation";
 import {
-  ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronLeft, Link2, Moon, Search, Sun,
+  ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronLeft, Download, Link2, Moon, Search, Sun,
 } from "lucide-react";
 import PlacesSection from "@/components/PlacesSection";
 import { places } from "@/data/places";
+import { RESUME, RESUME_PDF } from "@/data/resume";
+import Doodle, { type DoodleKind } from "@/components/Doodle";
 
 type Accent = "eng" | "music" | "sports" | "adventure";
-type NoteId = "index" | "contact" | "eng" | "experience" | "projects" | "music" | "sports" | "adventure";
+type NoteId = "index" | "contact" | "eng" | "experience" | "projects" | "resume" | "music" | "sports" | "adventure";
 
 const EMAIL = "michaelchendevs@gmail.com";
 
@@ -143,13 +145,14 @@ const NOTES: Note[] = [
   { id: "eng",        folder: "Work",          title: "Software Engineer",     accent: "eng",       meta: "Build mode",     preview: PANEL_COPY.eng.intro, keywords: STACK.join(" ") },
   { id: "experience", folder: "Work",          title: "Experience",            accent: "eng",       meta: "2023 — Now",     preview: "Infomedia · CoreForceTech · Kohl's Corporate · University of Georgia", keywords: EXPERIENCE.map(e => e.desc).join(" ") + " uga education stack" },
   { id: "projects",   folder: "Work",          title: "Projects",              accent: "eng",       meta: `${PROJECTS.length} shipped`, preview: PROJECTS.map(p => p.name).join(" · "), keywords: PROJECTS.map(p => p.desc + p.tags.join(" ")).join(" ") },
+  { id: "resume",     folder: "Work",          title: "Résumé",                accent: "eng",       meta: "PDF",            preview: "Education · Technical Skills · Experience · Projects", keywords: RESUME.experience.flatMap(e => e.bullets).join(" ") + RESUME.skills.map(k => k.items).join(" ") + " resume cv" },
   { id: "music",      folder: "Off the clock", title: "Music Lover",           accent: "music",     meta: "Listening mode", preview: PANEL_COPY.music.intro, keywords: "spotify playlist concerts guitar" },
   { id: "sports",     folder: "Off the clock", title: "Side Quest Enthusiast", accent: "sports",    meta: "After hours",    preview: PANEL_COPY.sports.intro, keywords: SIDEQUESTS.map(s => s.label + " " + s.text).join(" ") },
   { id: "adventure",  folder: "Off the clock", title: "Adventure Seeker",      accent: "adventure", meta: "Photo log",      preview: PANEL_COPY.adventure.intro, keywords: places.map(p => p.name).join(" ") + " travel photos" },
 ];
 
 // Reading order for prev/next and the arrow keys.
-const ORDER: NoteId[] = ["index", "eng", "experience", "projects", "music", "sports", "adventure", "contact"];
+const ORDER: NoteId[] = ["index", "eng", "experience", "projects", "resume", "music", "sports", "adventure", "contact"];
 const FOLDERS = ["Pinned", "Work", "Off the clock"];
 
 // rough-notation draws into SVG attributes, so it needs literal colors rather than CSS variables.
@@ -158,8 +161,39 @@ const INK: Record<"light" | "dark", Record<Accent, string>> = {
   dark:  { eng: "#6b9ee3", music: "#6cb872", sports: "#e8854a", adventure: "#dbb03a" },
 };
 
+const DOODLES: Record<NoteId, { kind: DoodleKind; color: string }> = {
+  index:      { kind: "sparkle",   color: "var(--c-adventure)" },
+  eng:        { kind: "code",      color: "var(--c-eng)" },
+  experience: { kind: "coffee",    color: "var(--c-eng)" },
+  projects:   { kind: "bulb",      color: "var(--c-adventure)" },
+  resume:     { kind: "clip",      color: "var(--muted)" },
+  music:      { kind: "notes",     color: "var(--c-music)" },
+  sports:     { kind: "tennis",    color: "var(--c-sports)" },
+  adventure:  { kind: "mountains", color: "var(--c-adventure)" },
+  contact:    { kind: "plane",     color: "var(--c-eng)" },
+};
+
+// Forward: the current page turns away from its left edge to reveal the next.
+// Backward: the previous page swings back in over the current one.
+const flip: Variants = {
+  enter: (dir: number) => dir > 0
+    ? { rotateY: 0, opacity: 1, zIndex: 1 }
+    : { rotateY: -100, opacity: 1, zIndex: 2, boxShadow: "0 0 60px rgba(0,0,0,.25)" },
+  center: {
+    rotateY: 0, opacity: 1, zIndex: 1, boxShadow: "0 0 0px rgba(0,0,0,0)",
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+  },
+  exit: (dir: number) => dir > 0
+    ? { rotateY: -100, zIndex: 2, boxShadow: "0 0 60px rgba(0,0,0,.25)", transition: { duration: 0.55, ease: [0.55, 0, 0.75, 0.3] } }
+    : { opacity: 0, zIndex: 0, transition: { duration: 0.2, delay: 0.4 } },
+};
+const fade: Variants = {
+  enter: { opacity: 0 },
+  center: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};
+
 const ThemeCtx = createContext(false);
-const ease = [0.22, 1, 0.36, 1] as const;
 
 function Mark({ c, type = "highlight", delay = 0, children }: {
   c: Accent; type?: "highlight" | "underline" | "circle" | "box"; delay?: number; children: React.ReactNode;
@@ -177,7 +211,7 @@ function Mark({ c, type = "highlight", delay = 0, children }: {
       strokeWidth: type === "highlight" ? 1 : 1.8,
       animationDuration: type === "highlight" ? 700 : 550,
     });
-    const t = setTimeout(() => a.show(), 420 + delay);
+    const t = setTimeout(() => a.show(), 650 + delay);
     return () => { clearTimeout(t); a.remove(); };
   }, [c, type, delay, dm]);
   return <span ref={ref}>{children}</span>;
@@ -190,6 +224,12 @@ function marked(text: string, mark: { text: string; type: "underline" | "circle"
   return <>{before}<Mark c={c} type={mark.type} delay={300}>{mark.text}</Mark>{after}</>;
 }
 
+function withNumbers(text: string) {
+  return text.split(/(\$?\d+(?:%\+?|\+)?(?: million)?)/).map((part, i) =>
+    i % 2 ? <strong key={i} className="num-hi">{part}</strong> : part,
+  );
+}
+
 export default function HomePage() {
   const [dm, setDm]         = useState(false);
   const [active, setActive] = useState<NoteId>("index");
@@ -197,6 +237,8 @@ export default function HomePage() {
   const [query, setQuery]   = useState("");
   const [copied, setCopied] = useState(false);
   const [done, setDone]     = useState<Record<string, boolean>>({});
+  const [dir, setDir]       = useState(1);
+  const reduce = useReducedMotion();
   const searchRef = useRef<HTMLInputElement>(null);
   const paneRef   = useRef<HTMLDivElement>(null);
 
@@ -210,6 +252,7 @@ export default function HomePage() {
   }, [query]);
 
   const open = (id: NoteId) => {
+    if (id !== active) setDir(ORDER.indexOf(id) >= ORDER.indexOf(active) ? 1 : -1);
     setActive(id);
     setView("note");
     paneRef.current?.scrollTo({ top: 0 });
@@ -350,17 +393,12 @@ export default function HomePage() {
           .side-foot { padding: 14px 22px calc(16px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--rule); }
 
           /* ── Note pane ── */
-          .pane {
-            position: relative; min-height: 0; overflow-y: auto;
-            background-color: var(--bg);
-            background-image: radial-gradient(var(--dot) 1px, transparent 1.2px);
-            background-size: 24px 24px;
-          }
+          .pane { position: relative; min-height: 0; overflow-y: auto; overflow-x: hidden; background: var(--side); }
           .toolbar {
             position: sticky; top: 0; z-index: 5;
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
             padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
-            background: color-mix(in srgb, var(--bg) 82%, transparent);
+            background: color-mix(in srgb, var(--bg) 88%, transparent);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
           }
           .back { display: none; align-items: center; gap: 2px; color: var(--a); font-size: 17px; }
@@ -454,6 +492,49 @@ export default function HomePage() {
           .pager button:last-child { text-align: right; grid-column: 2; }
           .pager button:last-child .mono { justify-content: flex-end; }
 
+          /* Page turn */
+          .pane { perspective: 2200px; }
+          .leaf {
+            position: relative; min-height: calc(100% - 58px);
+            transform-origin: left center; backface-visibility: hidden; transform-style: preserve-3d;
+            background-color: var(--bg);
+            background-image: radial-gradient(var(--dot) 1px, transparent 1.2px);
+            background-size: 24px 24px;
+          }
+          .page { position: relative; }
+
+          /* Doodles */
+          .doodle { position: absolute; top: 18px; right: clamp(14px, 4vw, 40px); width: 62px; height: 62px; transform: rotate(-8deg); pointer-events: none; }
+          .page .title { padding-right: 58px; }
+          @media (min-width: 1340px) {
+            .doodle { top: 70px; right: -150px; width: 118px; height: 118px; }
+            .page .title { padding-right: 0; }
+          }
+
+          /* Résumé */
+          .dl {
+            display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 99px;
+            font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+            background: var(--ink); color: var(--bg); transition: opacity .2s;
+          }
+          .dl:hover { opacity: .85; }
+          .dl.big { margin-top: 18px; height: 40px; padding: 0 16px; }
+          .ul { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); transition: text-decoration-color .2s; }
+          .ul:hover { text-decoration-color: var(--a); }
+          .cv { margin-top: 34px; padding: clamp(20px, 4vw, 36px); border-radius: 6px; background: var(--tile); border: 1px solid var(--rule); box-shadow: 0 18px 40px -30px rgba(0,0,0,.35); font-size: 16px; line-height: 1.55; }
+          .cv-h { font-variant: small-caps; font-size: 20px; font-weight: 500; letter-spacing: .02em; border-bottom: 1px solid var(--ink); padding-bottom: 2px; margin: 26px 0 10px; }
+          .cv-h:first-child { margin-top: 0; }
+          .cv-entry + .cv-entry { margin-top: 14px; }
+          .cv-line { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+          .cv-line b { font-weight: 500; }
+          .cv-line.sub { color: var(--muted); }
+          .cv-skill + .cv-skill { margin-top: 2px; }
+          .cv-skill b { font-weight: 500; }
+          .cv ul { margin: 6px 0 0 18px; list-style: disc; }
+          .cv li { margin-top: 4px; }
+          .cv li::marker { color: var(--a); }
+          .num-hi { font-weight: 500; color: var(--a); }
+
           @media (min-width: 861px) {
             .app { grid-template-columns: 320px minmax(0, 1fr); }
           }
@@ -523,6 +604,11 @@ export default function HomePage() {
           <div className="toolbar">
             <button className="back" onClick={() => setView("list")}><ChevronLeft size={20} />Notes</button>
             <div className="tools">
+              {active === "resume" && (
+                <a className="dl" href={RESUME_PDF} download>
+                  <Download size={14} /> PDF
+                </a>
+              )}
               <button className={`icon${copied ? " copied" : ""}`} onClick={copyLink} aria-label="Copy link to this note">
                 {copied ? <Check size={15} /> : <Link2 size={15} />}
               </button>
@@ -530,15 +616,18 @@ export default function HomePage() {
             </div>
           </div>
 
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.article
+          <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+            <motion.div
               key={active}
-              className="page"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.3, ease }}
+              className="leaf"
+              custom={dir}
+              variants={reduce ? fade : flip}
+              initial="enter"
+              animate="center"
+              exit="exit"
             >
+            <article className="page">
+              <Doodle kind={DOODLES[active].kind} className="doodle" style={{ color: DOODLES[active].color }} />
               {active === "index" && (
                 <>
                   <p className="mono eyebrow">Index</p>
@@ -566,7 +655,7 @@ export default function HomePage() {
                 </>
               )}
 
-              {active !== "index" && active !== "contact" && active !== "experience" && active !== "projects" && (() => {
+              {active in PANEL_COPY && (() => {
                 const copy = PANEL_COPY[active as Accent];
                 return (
                   <>
@@ -698,6 +787,51 @@ export default function HomePage() {
                 </>
               )}
 
+              {active === "resume" && (
+                <>
+                  <p className="mono eyebrow">Work · PDF</p>
+                  <h2 className="serif title">Résumé</h2>
+                  <p className="lede">
+                    <a href={`mailto:${EMAIL}`} className="ul">{EMAIL}</a>{" · "}
+                    <a href="https://linkedin.com/in/michael-chen880/" target="_blank" rel="noreferrer" className="ul">linkedin.com/in/michael-chen880/</a>
+                  </p>
+                  <a className="dl big" href={RESUME_PDF} download><Download size={15} /> Download PDF</a>
+
+                  <div className="cv">
+                    <h3 className="cv-h">Education</h3>
+                    <div className="cv-entry">
+                      <div className="cv-line"><b>{RESUME.education.school}</b><span>{RESUME.education.location}</span></div>
+                      <div className="cv-line sub"><i>{RESUME.education.degree}</i><i>{RESUME.education.date}</i></div>
+                    </div>
+
+                    <h3 className="cv-h">Technical Skills</h3>
+                    {RESUME.skills.map(k => (
+                      <p className="cv-skill" key={k.label}><b>{k.label}</b>: {k.items}</p>
+                    ))}
+
+                    <h3 className="cv-h">Experience</h3>
+                    {RESUME.experience.map(e => (
+                      <div className="cv-entry" key={e.co}>
+                        <div className="cv-line"><b>{e.role}</b><span>{e.date}</span></div>
+                        <div className="cv-line sub"><i>{e.co}</i><i>{e.location}</i></div>
+                        <ul>{e.bullets.map(b => <li key={b.slice(0, 32)}>{withNumbers(b)}</li>)}</ul>
+                      </div>
+                    ))}
+
+                    <h3 className="cv-h">Projects</h3>
+                    {RESUME.projects.map(pr => (
+                      <div className="cv-entry" key={pr.name}>
+                        <div className="cv-line">
+                          <span><b>{pr.name}</b> (<a href={pr.href} target="_blank" rel="noreferrer" className="ul">{pr.link}</a>) | <i>{pr.stack}</i></span>
+                          <span>{pr.date}</span>
+                        </div>
+                        <ul>{pr.bullets.map(b => <li key={b.slice(0, 32)}>{withNumbers(b)}</li>)}</ul>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
               {active === "contact" && (
                 <>
                   <p className="mono eyebrow" style={{ color: "var(--c-eng)" }}>Pinned</p>
@@ -725,7 +859,8 @@ export default function HomePage() {
                   </button>
                 )}
               </nav>
-            </motion.article>
+            </article>
+            </motion.div>
           </AnimatePresence>
         </section>
       </main>

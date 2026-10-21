@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { places } from "@/data/places";
+import MapSketch from "@/components/MapSketch";
 
 // Resting pose for the cards under the top one, so the pile looks hand-placed.
 const TILT = [-2, 4, -5];
@@ -17,6 +18,11 @@ export default function PlacesSection() {
   const go = (d: number) => {
     setDir(d);
     setIndex(i => (i + d + n) % n);
+  };
+  const pick = (i: number) => {
+    if (i === index) return;
+    setDir(i > index ? 1 : -1);
+    setIndex(i);
   };
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
@@ -116,6 +122,9 @@ export default function PlacesSection() {
           <button className="round" onClick={() => go(1)} aria-label="Next place"><ArrowRight size={15} /></button>
           <span className="mono" style={{ marginLeft: 6 }}>Drag or tap the photo</span>
         </div>
+      </div>
+      <div style={{ gridColumn: "1 / -1" }}>
+        <MapSketch index={index} onPick={pick} />
       </div>
     </div>
   );
