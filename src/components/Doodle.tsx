@@ -3,15 +3,10 @@
 import { motion } from "framer-motion";
 
 export type DoodleKind =
-  | "sparkle" | "code" | "coffee" | "bulb" | "notes" | "tennis" | "mountains" | "plane" | "clip";
+  | "code" | "coffee" | "bulb" | "notes" | "tennis" | "mountains" | "plane" | "clip";
 
 // Single-stroke sketches on a 120×120 canvas; each path draws itself in order.
 const PATHS: Record<DoodleKind, string[]> = {
-  sparkle: [
-    "M60 22 C63 47 71 56 98 60 C71 64 63 73 60 98 C57 73 49 64 22 60 C49 56 57 47 60 22 Z",
-    "M98 14 v16 M90 22 h16",
-    "M24 96 c4 0 6 2 6 6 c0 -4 2 -6 6 -6 c-4 0 -6 -2 -6 -6 c0 4 -2 6 -6 6",
-  ],
   code: [
     "M44 34 L20 60 L44 86",
     "M76 34 L100 60 L76 86",
@@ -80,6 +75,83 @@ export default function Doodle({ kind, className, style }: { kind: DoodleKind; c
             transition={{ pathLength: { duration: 0.8, delay: 0.55 + i * 0.22, ease: "easeInOut" }, opacity: { duration: 0.01, delay: 0.55 + i * 0.22 } }}
           />
         ))}
+      </g>
+    </svg>
+  );
+}
+
+// Atlanta skyline, left to right: SkyView wheel, State Capitol, Westin Peachtree Plaza,
+// One Atlantic Center, Bank of America Plaza, Truist Plaza, 191 Peachtree Tower.
+const SKYLINE_STROKES = [
+  "M4 120 H396",
+  // SkyView Atlanta
+  "M40 73 C52 73 62 83 62 95 C62 107 52 117 40 117 C28 117 18 107 18 95 C18 83 28 73 40 73 Z",
+  "M40 73 V117 M18 95 H62 M25 80 L55 110 M55 80 L25 110",
+  "M30 120 L40 95 L50 120",
+  // Georgia State Capitol
+  "M74 120 V104 H126 V120 M74 104 L100 98 L126 104",
+  "M89 98 V91 H111 V98",
+  "M90 91 C90 77 110 77 110 91",
+  "M100 79 V70",
+  // Westin Peachtree Plaza
+  "M140 120 V42 C140 36 158 36 158 42 V120",
+  "M140 42 C140 47 158 47 158 42 M140 58 C146 61 152 61 158 58 M140 74 C146 77 152 77 158 74",
+  // One Atlantic Center
+  "M170 120 V50 H192 V120 M181 50 V120",
+  "M168 50 L181 26 L194 50",
+  // Bank of America Plaza
+  "M208 120 V42 H238 V120 M223 42 V120",
+  "M208 42 L223 16 L238 42 Z M214 42 L223 26 L232 42",
+  "M223 16 V2",
+  // Truist Plaza
+  "M252 120 V60 H256 V54 H260 V48 H268 V54 H272 V60 H276 V120",
+  // 191 Peachtree Tower
+  "M290 120 V56 H314 V120 M292 56 V47 H299 V56 M305 56 V47 H312 V56",
+  // Low-rise
+  "M326 120 V86 H346 V120 M352 120 V98 H376 V120 M380 120 V106 H394",
+];
+
+// Only the details that really have color: gold leaf on the Capitol dome and the
+// Bank of America Plaza crown, and the Westin's glass.
+const SKYLINE_FILLS = [
+  { d: "M90 91 C90 77 110 77 110 91 Z", fill: "#d4a72c", opacity: 0.9 },
+  { d: "M208 42 L223 16 L238 42 Z", fill: "#d4a72c", opacity: 0.85 },
+  { d: "M140 120 V42 C140 36 158 36 158 42 V120 Z", fill: "#6f9fc8", opacity: 0.28 },
+];
+
+export function Skyline({ className, delay = 0.8 }: { className?: string; delay?: number }) {
+  const step = 0.09;
+  const fillsAt = delay + SKYLINE_STROKES.length * step + 0.5;
+  return (
+    <svg className={className} viewBox="0 0 400 124" fill="none" role="img" aria-label="Sketch of the Atlanta skyline">
+      <defs>
+        <filter id="wobble-skyline">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="11" />
+          <feDisplacementMap in="SourceGraphic" scale="1.1" />
+        </filter>
+      </defs>
+      <g filter="url(#wobble-skyline)">
+        {SKYLINE_FILLS.map(f => (
+          <motion.path
+            key={f.d}
+            d={f.d}
+            fill={f.fill}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: f.opacity }}
+            transition={{ duration: 0.8, delay: fillsAt }}
+          />
+        ))}
+        <g stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          {SKYLINE_STROKES.map((d, i) => (
+            <motion.path
+              key={i}
+              d={d}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ pathLength: { duration: 0.6, delay: delay + i * step, ease: "easeInOut" }, opacity: { duration: 0.01, delay: delay + i * step } }}
+            />
+          ))}
+        </g>
       </g>
     </svg>
   );

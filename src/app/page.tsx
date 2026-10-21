@@ -9,7 +9,7 @@ import {
 import PlacesSection from "@/components/PlacesSection";
 import { places } from "@/data/places";
 import { RESUME, RESUME_PDF } from "@/data/resume";
-import Doodle, { type DoodleKind } from "@/components/Doodle";
+import Doodle, { Skyline, type DoodleKind } from "@/components/Doodle";
 
 type Accent = "eng" | "music" | "sports" | "adventure";
 type NoteId = "index" | "contact" | "eng" | "experience" | "projects" | "resume" | "music" | "sports" | "adventure";
@@ -109,21 +109,21 @@ const PANEL_COPY: Record<Accent, { eyebrow: string; title: string; intro: string
     details: ["Enterprise ecommerce", "Full-stack product work", "Founder-style side projects"],
   },
   music: {
-    eyebrow: "Listening mode",
-    title: "A constant soundtrack, usually with a guitar nearby.",
-    intro: "Music is the background thread through most of my days: concerts, new artists, familiar albums, and the kind of songs that make ordinary errands feel cinematic.",
-    details: ["Concert calendar", "Guitar rabbit holes", "Repeat listens"],
+    eyebrow: "Music",
+    title: "Always something playing.",
+    intro: "Concerts when I can, guitar when I have time, and a few new artists most weeks. Here's what's on repeat.",
+    details: [],
   },
   sports: {
-    eyebrow: "After hours",
-    title: "Small rituals, long rallies, and useful ways to reset.",
-    intro: "Outside of work I like having motion in the week. Tennis, lifting, basketball, films, collecting, and little photo walks all keep the rest of life feeling textured.",
-    details: ["Tennis leagues", "Training rhythm", "Creative detours"],
+    eyebrow: "Side quests",
+    title: "Outside of work.",
+    intro: "Mostly tennis and the gym, plus film, collecting, and taking photos.",
+    details: [],
   },
   adventure: {
-    eyebrow: "Photo log",
-    title: "A map made from places I actually stopped to notice.",
-    intro: "Travel is partly about the city and partly about the tiny proof that you were paying attention: the street corner, the meal, the light, the accidental view.",
+    eyebrow: "Travel",
+    title: "Places I've been.",
+    intro: "A few photos from trips and cities I've spent time in.",
     details: [],
   },
 };
@@ -146,9 +146,9 @@ const NOTES: Note[] = [
   { id: "experience", folder: "Work",          title: "Experience",            accent: "eng",       meta: "2023 — Now",     preview: "Infomedia · CoreForceTech · Kohl's Corporate · University of Georgia", keywords: EXPERIENCE.map(e => e.desc).join(" ") + " uga education stack" },
   { id: "projects",   folder: "Work",          title: "Projects",              accent: "eng",       meta: `${PROJECTS.length} shipped`, preview: PROJECTS.map(p => p.name).join(" · "), keywords: PROJECTS.map(p => p.desc + p.tags.join(" ")).join(" ") },
   { id: "resume",     folder: "Work",          title: "Résumé",                accent: "eng",       meta: "PDF",            preview: "Education · Technical Skills · Experience · Projects", keywords: RESUME.experience.flatMap(e => e.bullets).join(" ") + RESUME.skills.map(k => k.items).join(" ") + " resume cv" },
-  { id: "music",      folder: "Off the clock", title: "Music Lover",           accent: "music",     meta: "Listening mode", preview: PANEL_COPY.music.intro, keywords: "spotify playlist concerts guitar" },
-  { id: "sports",     folder: "Off the clock", title: "Side Quest Enthusiast", accent: "sports",    meta: "After hours",    preview: PANEL_COPY.sports.intro, keywords: SIDEQUESTS.map(s => s.label + " " + s.text).join(" ") },
-  { id: "adventure",  folder: "Off the clock", title: "Adventure Seeker",      accent: "adventure", meta: "Photo log",      preview: PANEL_COPY.adventure.intro, keywords: places.map(p => p.name).join(" ") + " travel photos" },
+  { id: "music",      folder: "Off the clock", title: "Music Lover",           accent: "music",     meta: "Music",          preview: PANEL_COPY.music.intro, keywords: "spotify playlist concerts guitar" },
+  { id: "sports",     folder: "Off the clock", title: "Side Quest Enthusiast", accent: "sports",    meta: "Side quests",    preview: PANEL_COPY.sports.intro, keywords: SIDEQUESTS.map(s => s.label + " " + s.text).join(" ") },
+  { id: "adventure",  folder: "Off the clock", title: "Adventure Seeker",      accent: "adventure", meta: "Travel",         preview: PANEL_COPY.adventure.intro, keywords: places.map(p => p.name).join(" ") + " travel photos" },
 ];
 
 // Reading order for prev/next and the arrow keys.
@@ -161,8 +161,8 @@ const INK: Record<"light" | "dark", Record<Accent, string>> = {
   dark:  { eng: "#6b9ee3", music: "#6cb872", sports: "#e8854a", adventure: "#dbb03a" },
 };
 
-const DOODLES: Record<NoteId, { kind: DoodleKind; color: string }> = {
-  index:      { kind: "sparkle",   color: "var(--c-adventure)" },
+// The index note gets the skyline instead of a margin doodle.
+const DOODLES: Partial<Record<NoteId, { kind: DoodleKind; color: string }>> = {
   eng:        { kind: "code",      color: "var(--c-eng)" },
   experience: { kind: "coffee",    color: "var(--c-eng)" },
   projects:   { kind: "bulb",      color: "var(--c-adventure)" },
@@ -326,6 +326,8 @@ export default function HomePage() {
             --c-music: #2a7030;
             --c-sports: #b84a10;
             --c-adventure: #9a7000;
+            /* Fine paper grain: tinted fractal noise, tiled. */
+            --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .27 0 0 0 0 .2 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
             display: grid; grid-template-columns: minmax(0, 1fr);
             height: 100vh; height: 100dvh;
             background: var(--bg); color: var(--ink);
@@ -345,6 +347,7 @@ export default function HomePage() {
             --c-music: #6cb872;
             --c-sports: #e8854a;
             --c-adventure: #dbb03a;
+            --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .96 0 0 0 0 .9 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
             color-scheme: dark;
           }
           :where(.app) *, :where(.app) *::before, :where(.app) *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -365,7 +368,7 @@ export default function HomePage() {
           /* ── Sidebar ── */
           .side {
             display: flex; flex-direction: column; min-height: 0;
-            background: var(--side); border-right: 1px solid var(--rule);
+            background: var(--grain), var(--side); background-size: 180px 180px; border-right: 1px solid var(--rule);
             padding-top: env(safe-area-inset-top, 0px);
           }
           .side-top { display: flex; align-items: center; justify-content: space-between; padding: 22px 18px 6px 22px; }
@@ -398,7 +401,8 @@ export default function HomePage() {
             position: sticky; top: 0; z-index: 5;
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
             padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
-            background: color-mix(in srgb, var(--bg) 88%, transparent);
+            background: var(--grain), color-mix(in srgb, var(--bg) 88%, transparent);
+            background-size: 180px 180px, auto;
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
           }
           .back { display: none; align-items: center; gap: 2px; color: var(--a); font-size: 17px; }
@@ -498,14 +502,15 @@ export default function HomePage() {
             position: relative; min-height: calc(100% - 58px);
             transform-origin: left center; backface-visibility: hidden; transform-style: preserve-3d;
             background-color: var(--bg);
-            background-image: radial-gradient(var(--dot) 1px, transparent 1.2px);
-            background-size: 24px 24px;
+            background-image: radial-gradient(var(--dot) 1px, transparent 1.2px), var(--grain);
+            background-size: 24px 24px, 180px 180px;
           }
           .page { position: relative; }
 
           /* Doodles */
           .doodle { position: absolute; top: 18px; right: clamp(14px, 4vw, 40px); width: 62px; height: 62px; transform: rotate(-8deg); pointer-events: none; }
           .page .title { padding-right: 58px; }
+          .skyline { display: block; width: 100%; height: auto; margin-top: 34px; color: var(--ink); }
           @media (min-width: 1340px) {
             .doodle { top: 70px; right: -150px; width: 118px; height: 118px; }
             .page .title { padding-right: 0; }
@@ -627,7 +632,7 @@ export default function HomePage() {
               exit="exit"
             >
             <article className="page">
-              <Doodle kind={DOODLES[active].kind} className="doodle" style={{ color: DOODLES[active].color }} />
+              {DOODLES[active] && <Doodle kind={DOODLES[active].kind} className="doodle" style={{ color: DOODLES[active].color }} />}
               {active === "index" && (
                 <>
                   <p className="mono eyebrow">Index</p>
@@ -640,6 +645,7 @@ export default function HomePage() {
                     <button style={{ "--c": "var(--c-sports)" } as React.CSSProperties} onClick={() => open("sports")}><Mark c="sports" delay={900}>fun side quests</Mark></button>, and a{" "}
                     <button style={{ "--c": "var(--c-adventure)" } as React.CSSProperties} onClick={() => open("adventure")}><Mark c="adventure" delay={1300}>restless need to explore</Mark></button>.
                   </p>
+                  <Skyline className="skyline" delay={2} />
                   <div className="index">
                     {TAGS.map(t => (
                       <button key={t.id} onClick={() => open(t.id)} style={{ "--c": `var(--c-${t.id})` } as React.CSSProperties}>
@@ -741,7 +747,7 @@ export default function HomePage() {
 
               {active === "music" && (
                 <>
-                  <div className="sheet" style={{ padding: 10 }}>
+                  <div className="sheet" style={{ padding: 10, marginTop: 30 }}>
                     <iframe
                       title="Spotify playlist"
                       src="https://open.spotify.com/embed/playlist/4ynAF5u8eruVcNJGGEA7R5?utm_source=generator&theme=0"
@@ -750,12 +756,6 @@ export default function HomePage() {
                       loading="lazy"
                       style={{ display: "block", borderRadius: 12 }}
                     />
-                  </div>
-                  <p className="mono label">Usual ingredients</p>
-                  <div className="chips">
-                    {["Live shows", "Guitar", "Long walks", "New releases", "Old favorites", "Kitchen playlists"].map(item => (
-                      <span className="chip" key={item}>{item}</span>
-                    ))}
                   </div>
                 </>
               )}
