@@ -539,12 +539,30 @@ export default function HomePage() {
           .links a:first-child { border-top: 1px solid var(--rule); }
           .links a:hover { padding-left: 10px; color: var(--c-eng); }
 
-          .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 64px; }
-          .pager button { padding: 14px 16px; border-radius: 14px; border: 1px solid var(--rule); background: var(--tile); transition: border-color .2s; }
-          .pager button:hover { border-color: var(--muted); }
-          .pager .mono { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
-          .pager button:last-child { text-align: right; grid-column: 2; }
-          .pager button:last-child .mono { justify-content: flex-end; }
+          /* Book-style page footer */
+          .pager {
+            display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 16px;
+            margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--rule);
+          }
+          .pager button { display: flex; flex-direction: column; gap: 6px; padding: 4px 0; }
+          .pager .next { align-items: flex-end; text-align: right; }
+          .pager .mono { display: inline-flex; align-items: center; gap: 5px; }
+          .pager .mono svg { transition: transform .3s cubic-bezier(.22,1,.36,1); }
+          .pager .prev:hover .mono svg { transform: translateX(-4px); }
+          .pager .next:hover .mono svg { transform: translateX(4px); }
+          .pager .t { position: relative; font-size: clamp(24px, 3vw, 30px); line-height: 1.1; transition: color .2s; }
+          .pager button:hover .t { color: var(--c); }
+          /* Hand-drawn squiggle that draws in under the title on hover. */
+          .pager .t::after {
+            content: ""; position: absolute; left: 0; right: 0; bottom: -7px; height: 7px;
+            background: var(--c);
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 7' preserveAspectRatio='none'%3E%3Cpath d='M1 4 Q5 1 10 4 T20 4 T30 4 T39 4' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") center / 40px 7px repeat-x;
+                    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 7' preserveAspectRatio='none'%3E%3Cpath d='M1 4 Q5 1 10 4 T20 4 T30 4 T39 4' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") center / 40px 7px repeat-x;
+            clip-path: inset(0 100% 0 0); transition: clip-path .45s cubic-bezier(.22,1,.36,1);
+          }
+          .pager .next .t::after { clip-path: inset(0 0 0 100%); }
+          .pager button:hover .t::after { clip-path: inset(0 0 0 0); }
+          .pager .folio { padding-bottom: 8px; color: var(--muted); }
 
           /* Page turn */
           .pane { perspective: 2200px; }
@@ -725,7 +743,7 @@ export default function HomePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 2.4 }}
                   >
-                    <span><span className="hint-hover">Click</span><span className="hint-touch">Tap</span> a highlight or a section below to explore</span>
+                    <span><span className="hint-hover">Click</span><span className="hint-touch">Tap</span> a section to explore</span>
                     <svg viewBox="0 0 34 34" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M4 5 C18 6 25 13 23 29" />
                       <path d="M17 23.5 L23 29.5 L28.5 23" />
@@ -931,18 +949,19 @@ export default function HomePage() {
               )}
 
               <nav className="pager" aria-label="More notes">
-                {prev && (
-                  <button onClick={() => open(prev.id)}>
+                {prev ? (
+                  <button className="prev" onClick={() => open(prev.id)} style={{ "--c": prev.accent ? `var(--c-${prev.accent})` : "var(--ink)" } as React.CSSProperties}>
                     <span className="mono"><ArrowLeft size={12} /> Previous</span>
-                    {prev.title}
+                    <span className="serif t">{prev.title}</span>
                   </button>
-                )}
-                {next && (
-                  <button onClick={() => open(next.id)}>
+                ) : <span />}
+                <span className="mono folio">{pos + 1} / {ORDER.length}</span>
+                {next ? (
+                  <button className="next" onClick={() => open(next.id)} style={{ "--c": next.accent ? `var(--c-${next.accent})` : "var(--ink)" } as React.CSSProperties}>
                     <span className="mono">Next <ArrowRight size={12} /></span>
-                    {next.title}
+                    <span className="serif t">{next.title}</span>
                   </button>
-                )}
+                ) : <span />}
               </nav>
             </article>
             </motion.div>
