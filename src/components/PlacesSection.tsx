@@ -59,11 +59,11 @@ export default function PlacesSection({ jump }: { jump?: { index: number; key: n
         .polaroid img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 3px; pointer-events: none; }
         .polaroid figcaption {
           position: absolute; left: 12px; right: 12px; bottom: 9px;
-          font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 17px;
+          font-family: var(--font-display), serif; font-style: italic; font-size: 17px;
           color: #3a3a36; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .place-info { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
-        .place-name { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 400; font-size: clamp(30px, 3.4vw, 38px); line-height: 1.02; }
+        .place-name { font-family: var(--font-display), serif; font-style: italic; font-weight: 400; font-size: clamp(30px, 3.4vw, 38px); line-height: 1.02; }
         .place-desc { color: var(--muted); font-size: 16px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .place-coords { display: inline-flex; align-items: center; gap: 6px; }
         .place-ctrl { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 6px; }

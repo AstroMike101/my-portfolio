@@ -1,55 +1,11 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-/* Force Poppins globally */
 html {
-  font-family: 'Poppins', sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Matches the notebook paper so overscroll and the iOS status bar blend in. */
 body {
-  font-family: 'Poppins', sans-serif !important;
-}
-
-/* Keep your theme vars */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-/* Smooth scroll */
-html { scroll-behavior: smooth; }
-
-/* iOS notch/status bar color */
-@supports (-webkit-touch-callout: none) {
-  body { background-color: #f8fafc; }
-}
-
-/* Cursor blink animation */
-@keyframes blink {
-  0%, 50%, 100% { opacity: 1; }
-  25%, 75% { opacity: 0; }
-}
-
-.gradient-cursor {
-  background: linear-gradient(90deg, #10b981, #0ea5e9);
-  width: 2px;
-  height: 1em;
-  display: inline-block;
-  animation: blink 1s infinite;
-}
-
-/* Apply theme background & text */
-body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #EEEEEA;
 }

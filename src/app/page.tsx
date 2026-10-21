@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { annotate } from "rough-notation";
 import {
@@ -263,12 +263,12 @@ export default function HomePage() {
     return NOTES.filter(n => `${n.title} ${n.meta} ${n.preview} ${n.keywords}`.toLowerCase().includes(q));
   }, [query]);
 
-  const open = (id: NoteId) => {
+  const open = useCallback((id: NoteId) => {
     if (id !== active) setDir(ORDER.indexOf(id) >= ORDER.indexOf(active) ? 1 : -1);
     setActive(id);
     setView("note");
     paneRef.current?.scrollTo({ top: 0 });
-  };
+  }, [active]);
 
   // The skyline lights up after dark in Atlanta.
   useEffect(() => {
@@ -321,7 +321,7 @@ export default function HomePage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active, results]);
+  }, [active, results, open]);
 
   const copyLink = async () => {
     try {
@@ -349,7 +349,6 @@ export default function HomePage() {
         style={{ "--a": accent ? `var(--c-${accent})` : "var(--ink)" } as React.CSSProperties}
       >
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Cormorant+Garamond:ital,wght@0,400;1,300;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap');
 
           .app {
             --bg: #EEEEEA;
@@ -369,7 +368,7 @@ export default function HomePage() {
             display: grid; grid-template-columns: minmax(0, 1fr);
             height: 100vh; height: 100dvh;
             background: var(--bg); color: var(--ink);
-            font-family: 'EB Garamond', Georgia, serif; font-size: 17px;
+            font-family: var(--font-body), Georgia, serif; font-size: 17px;
             transition: background .4s, color .4s;
           }
           .app.dark {
@@ -393,9 +392,9 @@ export default function HomePage() {
           :where(.app) a { color: inherit; text-decoration: none; }
           .app ::selection { background: var(--a); color: var(--bg); }
 
-          .mono { font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-          .serif { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300; letter-spacing: -0.015em; }
-          .hand { font-family: 'Caveat', cursive; font-weight: 500; }
+          .mono { font-family: var(--font-mono), monospace; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+          .serif { font-family: var(--font-display), serif; font-style: italic; font-weight: 300; letter-spacing: -0.015em; }
+          .hand { font-family: var(--font-hand), cursive; font-weight: 500; }
           .icon {
             width: 34px; height: 34px; border-radius: 99px; flex-shrink: 0;
             display: inline-flex; align-items: center; justify-content: center;
@@ -419,7 +418,7 @@ export default function HomePage() {
             font: inherit; font-size: 16px; outline: none; transition: border-color .2s, box-shadow .2s;
           }
           .search input:focus { border-color: var(--muted); box-shadow: 0 0 0 4px color-mix(in srgb, var(--muted) 14%, transparent); }
-          .search kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); border: 1px solid var(--rule); border-radius: 5px; padding: 1px 6px; }
+          .search kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono), monospace; font-size: 10px; color: var(--muted); border: 1px solid var(--rule); border-radius: 5px; padding: 1px 6px; }
           .list { flex: 1; overflow-y: auto; padding: 6px 10px 20px; }
           .folder { padding: 18px 12px 6px; }
           .item { position: relative; display: block; width: 100%; padding: 11px 12px; border-radius: 12px; }
@@ -463,7 +462,7 @@ export default function HomePage() {
             transition: padding .25s cubic-bezier(.22,1,.36,1);
           }
           .index button:hover { padding-left: 12px; }
-          .index .num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--c); }
+          .index .num { font-family: var(--font-mono), monospace; font-size: 11px; color: var(--c); }
           .index .lbl { font-size: clamp(22px, 3vw, 28px); line-height: 1.15; }
           .index button:hover .lbl { color: var(--c); }
           .index svg { color: var(--muted); transition: transform .25s, color .25s; }
@@ -474,7 +473,7 @@ export default function HomePage() {
           .details .mono { color: var(--a); }
           .chips { display: flex; flex-wrap: wrap; gap: 7px; }
           .chip {
-            font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase;
+            font-family: var(--font-mono), monospace; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase;
             padding: 6px 10px; border-radius: 8px;
             border: 1px solid color-mix(in srgb, var(--a) 30%, var(--rule));
             background: color-mix(in srgb, var(--a) 7%, var(--tile));
@@ -557,7 +556,7 @@ export default function HomePage() {
           /* Résumé */
           .dl {
             display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 99px;
-            font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+            font-family: var(--font-mono), monospace; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
             background: var(--ink); color: var(--bg); transition: opacity .2s;
           }
           .dl:hover { opacity: .85; }
@@ -584,7 +583,7 @@ export default function HomePage() {
             writing-mode: vertical-rl; padding: 16px 8px 16px 9px;
             border-radius: 10px 0 0 10px; border: 1px solid color-mix(in srgb, var(--c) 35%, var(--rule)); border-right: none;
             background: var(--grain), color-mix(in srgb, var(--c) 14%, var(--tile)); background-size: 180px 180px, auto;
-            font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--c);
+            font-family: var(--font-mono), monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--c);
             box-shadow: -2px 2px 6px -3px rgba(0,0,0,.18);
             transform: translateX(8px); transition: transform .25s cubic-bezier(.22,1,.36,1), background .2s;
           }

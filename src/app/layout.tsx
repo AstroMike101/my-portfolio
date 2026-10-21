@@ -1,14 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Poppins } from "next/font/google";
+import { Caveat, Cormorant_Garamond, DM_Mono, EB_Garamond } from "next/font/google";
 import "./globals.css";
 
+// Self-hosted by Next and exposed as CSS variables the page styles use.
+const display = Cormorant_Garamond({ subsets: ["latin"], weight: ["300", "400"], style: ["normal", "italic"], variable: "--font-display" });
+const body    = EB_Garamond({ subsets: ["latin"], weight: ["400", "500"], style: ["normal", "italic"], variable: "--font-body" });
+const mono    = DM_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono" });
+const hand    = Caveat({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-hand" });
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"], 
-  variable: "--font-poppins",
-});
+export const viewport: Viewport = {
+  themeColor: "#EEEEEA",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://michaelchen.live"),
@@ -35,11 +38,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={poppins.variable}>
-      <head>
-        <meta name="theme-color" content="#f8fafc" />
-      </head>
-      <body className="font-sans">{children}</body>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable} ${hand.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

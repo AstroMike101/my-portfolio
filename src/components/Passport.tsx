@@ -65,7 +65,7 @@ export default function Passport({ index, onPick, onHover }: {
           position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
           --ink-c: var(--ink-base);
           color: var(--ink-c); border: 2px solid var(--ink-c); text-align: center;
-          font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .1em;
+          font-family: var(--font-mono), monospace; text-transform: uppercase; letter-spacing: .1em;
           opacity: .62; mix-blend-mode: multiply;
           transform: rotate(var(--tilt));
           transition: opacity .2s, transform .25s cubic-bezier(.22,1,.36,1);
