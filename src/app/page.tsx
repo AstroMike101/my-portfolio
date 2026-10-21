@@ -23,6 +23,7 @@ const EXPERIENCE = [
     co: "Infomedia",
     href: "https://www.infomedia.com.au/",
     desc: "Building core front-end and back-end systems for enterprise e-commerce platforms serving Ford, Toyota, Honda, BMW, and VW dealer networks. Full-stack across Vue.js, C#, .NET, and SQL Server.",
+    mark: { text: "Ford, Toyota, Honda, BMW, and VW", type: "underline" as const },
   },
   {
     date: "Jun 2024 – Jul 2025",
