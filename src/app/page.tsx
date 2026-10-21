@@ -442,6 +442,9 @@ export default function HomePage() {
           .search input:focus { border-color: var(--muted); box-shadow: 0 0 0 4px color-mix(in srgb, var(--muted) 14%, transparent); }
           .search kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono), monospace; font-size: 10px; color: var(--muted); border: 1px solid var(--rule); border-radius: 5px; padding: 1px 6px; }
           .list { flex: 1; overflow-y: auto; padding: 6px 10px 20px; }
+          .side .list-hint { display: none; margin: 10px 22px 0; font-size: 21px; }
+          @media (max-width: 860px) { .side .list-hint { display: flex; } }
+          @media (hover: none) { .search kbd { display: none; } }
           .folder { padding: 18px 12px 6px; }
           .item { position: relative; display: block; width: 100%; padding: 11px 12px; border-radius: 12px; }
           .item .bg { position: absolute; inset: 0; border-radius: 12px; background: var(--tile); box-shadow: 0 1px 0 var(--rule); }
@@ -670,6 +673,17 @@ export default function HomePage() {
             />
             {!query && <kbd>/</kbd>}
           </div>
+
+          {/* Phones open on this list, so the explore hint lives here too. */}
+          {!query && (
+            <p className="hand hint list-hint">
+              <span>Tap a section to explore</span>
+              <svg viewBox="0 0 34 34" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 5 C18 6 25 13 23 29" />
+                <path d="M17 23.5 L23 29.5 L28.5 23" />
+              </svg>
+            </p>
+          )}
 
           <nav className="list" aria-label="Notes">
             {FOLDERS.map(folder => {
