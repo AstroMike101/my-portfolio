@@ -11,6 +11,7 @@ import { places } from "@/data/places";
 import { RESUME, RESUME_PDF } from "@/data/resume";
 import Doodle, { Skyline, type DoodleKind } from "@/components/Doodle";
 import Hearts from "@/components/Hearts";
+import Carving from "@/components/Carving";
 
 type Accent = "eng" | "music" | "sports" | "adventure";
 type NoteId = "index" | "contact" | "eng" | "experience" | "projects" | "resume" | "music" | "sports" | "adventure";
@@ -212,6 +213,7 @@ const fingerprint = (s: string) => {
 };
 const BALL_EGG = 470939810;
 const LOVE_EGG = 3148932341;
+const CARVE_EGG = 3401242236;
 
 const ThemeCtx = createContext(false);
 
@@ -272,6 +274,8 @@ export default function HomePage() {
   const [ball, setBall]     = useState<number | null>(null);
   const [love, setLove]     = useState<{ key: number; name: string } | null>(null);
   const endLove = useCallback(() => setLove(null), []);
+  const [carve, setCarve]   = useState<{ key: number; text: string } | null>(null);
+  const endCarve = useCallback(() => setCarve(null), []);
   const [placeJump, setPlaceJump] = useState<{ index: number; key: number }>();
   const [done, setDone]     = useState<Record<string, boolean>>({});
   const [dir, setDir]       = useState(1);
@@ -313,6 +317,7 @@ export default function HomePage() {
     const q = value.trim().toLowerCase();
     if (fingerprint(q) === BALL_EGG && !reduce) setBall(Date.now());
     if (fingerprint(q) === LOVE_EGG) setLove({ key: Date.now(), name: q });
+    if (fingerprint(q) === CARVE_EGG) setCarve({ key: Date.now(), text: q });
     const hit = places.findIndex(p => {
       const city = p.name.split(",")[0].toLowerCase();
       return q.length >= 4 && (city === q || city.replace(/ city$/, "") === q);
@@ -715,7 +720,7 @@ export default function HomePage() {
                 </div>
               );
             })}
-            {!results.length && ![BALL_EGG, LOVE_EGG].includes(fingerprint(query.trim().toLowerCase())) && <p className="empty">No notes match “{query}”.</p>}
+            {!results.length && ![BALL_EGG, LOVE_EGG, CARVE_EGG].includes(fingerprint(query.trim().toLowerCase())) && <p className="empty">No notes match “{query}”.</p>}
           </nav>
 
           <div className="side-foot mono">© {new Date().getFullYear()} Michael Chen</div>
@@ -1011,6 +1016,7 @@ export default function HomePage() {
         </nav>
 
         {love && <Hearts key={love.key} name={love.name} calm={!!reduce} onDone={endLove} />}
+        {carve && <Carving key={carve.key} text={carve.text} calm={!!reduce} onDone={endCarve} />}
 
         <AnimatePresence>
           {ball && (
