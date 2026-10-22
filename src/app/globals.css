@@ -9,3 +9,7 @@ html {
 body {
   background: #EEEEEA;
 }
+
+html[data-theme="dark"] body {
+  background: #131312;
+}

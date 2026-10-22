@@ -38,7 +38,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable} ${hand.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable} ${hand.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Apply the saved theme before first paint so dark mode doesn't flash light. */}
+        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem("theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}` }} />
+      </head>
       <body>{children}</body>
     </html>
   );

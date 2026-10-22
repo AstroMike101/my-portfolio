@@ -252,11 +252,22 @@ function withNumbers(text: string) {
 
 export default function HomePage() {
   const [dm, setDm]         = useState(false);
+
+  // The saved theme is applied to <html> before paint (see layout); sync React to it.
+  useEffect(() => {
+    if (document.documentElement.dataset.theme === "dark") setDm(true);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = !dm;
+    setDm(next);
+    document.documentElement.dataset.theme = next ? "dark" : "light";
+    try { localStorage.setItem("theme", next ? "dark" : "light"); } catch { /* storage unavailable */ }
+  };
   const [active, setActive] = useState<NoteId>("index");
   const [view, setView]     = useState<"list" | "note">("list");
   const [query, setQuery]   = useState("");
   const [copied, setCopied] = useState(false);
-  const [night, setNight]   = useState(false);
   const [narrow, setNarrow] = useState(false);
   const [ball, setBall]     = useState<number | null>(null);
   const [love, setLove]     = useState<{ key: number; name: string } | null>(null);
@@ -295,17 +306,6 @@ export default function HomePage() {
   // Only mount the page while it's on screen, so its drawings and highlights
   // animate when the note is opened (and measure real text, not a hidden pane).
   const paneVisible = !narrow || view === "note";
-
-  // The skyline lights up after dark in Atlanta.
-  useEffect(() => {
-    const check = () => {
-      const hour = Number(new Date().toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: "America/New_York" }));
-      setNight(hour >= 20 || hour < 6);
-    };
-    check();
-    const id = setInterval(check, 10 * 60_000);
-    return () => clearInterval(id);
-  }, []);
 
   // Search easter eggs: "tennis" sends a ball across the page; a city name opens that photo.
   const onSearch = (value: string) => {
@@ -363,7 +363,7 @@ export default function HomePage() {
   const next = pos < ORDER.length - 1 ? NOTES.find(n => n.id === ORDER[pos + 1]) : null;
 
   const ThemeBtn = (
-    <button className="icon" onClick={() => setDm(d => !d)} aria-label="Toggle dark mode">
+    <button className="icon" onClick={toggleTheme} aria-label="Toggle dark mode">
       {dm ? <Sun size={15} /> : <Moon size={15} />}
     </button>
   );
@@ -398,7 +398,7 @@ export default function HomePage() {
             font-family: var(--font-body), Georgia, serif; font-size: 17px;
             transition: background .4s, color .4s;
           }
-          .app.dark {
+          :is(.app.dark, [data-theme="dark"] .app) {
             --bg: #131312;
             --side: #0e0e0d;
             --tile: #1b1b19;
@@ -764,7 +764,7 @@ export default function HomePage() {
                     <button style={{ "--c": "var(--c-sports)" } as React.CSSProperties} onClick={() => open("sports")}><Mark c="sports" delay={900}>fun side quests</Mark></button>, and a{" "}
                     <button style={{ "--c": "var(--c-adventure)" } as React.CSSProperties} onClick={() => open("adventure")}><Mark c="adventure" delay={1300}>restless need to explore</Mark></button>.
                   </p>
-                  <Skyline className="skyline" delay={2} lit={dm || night} />
+                  <Skyline className="skyline" delay={2} lit={dm} />
                   <motion.p
                     className="hand hint"
                     initial={{ opacity: 0, y: 4 }}

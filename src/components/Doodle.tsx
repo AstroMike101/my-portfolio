@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 export type DoodleKind =
@@ -147,6 +148,14 @@ const WINDOWS = WINDOW_AREAS.flatMap(({ x, y, skip }, b) => {
 export function Skyline({ className, delay = 0.8, lit = false }: { className?: string; delay?: number; lit?: boolean }) {
   const step = 0.09;
   const fillsAt = delay + SKYLINE_STROKES.length * step + 0.5;
+
+  // Windows wait for the skyline to finish drawing; after that, toggling is quick.
+  const [drawn, setDrawn] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setDrawn(true), fillsAt * 1000);
+    return () => clearTimeout(id);
+  }, [fillsAt]);
+
   return (
     <svg className={className} viewBox="0 0 400 124" fill="none" role="img" aria-label="Sketch of the Atlanta skyline">
       <defs>
@@ -161,9 +170,9 @@ export function Skyline({ className, delay = 0.8, lit = false }: { className?: s
             key={i}
             x={w.x} y={w.y} width={2.2} height={3.2} rx={0.4}
             fill="#ffd36b"
-            initial={false}
-            animate={{ opacity: lit ? 0.95 : 0 }}
-            transition={{ duration: 0.4, delay: lit ? fillsAt * 0.3 + (i % 17) * 0.06 : 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: lit && drawn ? 0.95 : 0 }}
+            transition={{ duration: 0.4, delay: lit && drawn ? (i % 17) * 0.05 : 0 }}
           />
         ))}
         {SKYLINE_FILLS.map(f => (

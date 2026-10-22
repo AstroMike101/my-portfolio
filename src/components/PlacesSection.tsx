@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { places } from "@/data/places";
@@ -32,6 +32,9 @@ export default function PlacesSection({ jump }: { jump?: { index: number; key: n
   useEffect(() => {
     if (jump) setIndex(jump.index);
   }, [jump]);
+
+  // Releasing a drag also fires a tap; remember the drag so it only advances once.
+  const dragged = useRef(false);
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     if (Math.abs(info.offset.x) > 80 || Math.abs(info.velocity.x) > 500) {
@@ -93,8 +96,10 @@ export default function PlacesSection({ jump }: { jump?: { index: number; key: n
                 dragSnapToOrigin
                 dragElastic={0.6}
                 whileDrag={{ scale: 1.03, rotate: 0 }}
+                onTapStart={() => { dragged.current = false; }}
+                onDragStart={() => { dragged.current = true; }}
                 onDragEnd={top ? onDragEnd : undefined}
-                onTap={top ? () => go(1) : undefined}
+                onTap={top ? () => { if (!dragged.current) go(1); } : undefined}
               >
                 <img src={places[i].img} alt={places[i].name} draggable={false} />
                 <figcaption>{places[i].name.split(",")[0]}</figcaption>

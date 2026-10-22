@@ -70,7 +70,7 @@ export default function Passport({ index, onPick, onHover }: {
           transform: rotate(var(--tilt));
           transition: opacity .2s, transform .25s cubic-bezier(.22,1,.36,1);
         }
-        .app.dark .stamp { mix-blend-mode: normal; --ink-c: color-mix(in srgb, var(--ink-base) 62%, #f0f0ec); }
+        :is(.app.dark, [data-theme="dark"] .app) .stamp { mix-blend-mode: normal; --ink-c: color-mix(in srgb, var(--ink-base) 62%, #f0f0ec); }
         .stamp:hover, .stamp:focus-visible, .stamp.here { opacity: 1; transform: rotate(var(--tilt)) scale(1.06); }
         .stamp.circle { width: 112px; height: 112px; border-radius: 50%; box-shadow: inset 0 0 0 4px var(--tile), inset 0 0 0 5.5px var(--ink-c); }
         .stamp.rect   { width: 132px; height: 100px; border-radius: 4px; }
