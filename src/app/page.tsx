@@ -11,7 +11,7 @@ import { places } from "@/data/places";
 import { RESUME, RESUME_PDF } from "@/data/resume";
 import Doodle, { Skyline, type DoodleKind } from "@/components/Doodle";
 import Hearts from "@/components/Hearts";
-import Carving from "@/components/Carving";
+import Constellation from "@/components/Constellation";
 
 type Accent = "eng" | "music" | "sports" | "adventure";
 type NoteId = "index" | "contact" | "eng" | "experience" | "projects" | "resume" | "music" | "sports" | "adventure";
@@ -1016,7 +1016,7 @@ export default function HomePage() {
         </nav>
 
         {love && <Hearts key={love.key} name={love.name} calm={!!reduce} onDone={endLove} />}
-        {carve && <Carving key={carve.key} text={carve.text} calm={!!reduce} onDone={endCarve} />}
+        {carve && <Constellation key={carve.key} text={carve.text} calm={!!reduce} onDone={endCarve} />}
 
         <AnimatePresence>
           {ball && (
