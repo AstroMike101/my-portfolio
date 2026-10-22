@@ -124,7 +124,7 @@ export const places: Place[] = [
     {
         name: "Minneapolis, MN",
         coords: [44.9778, -93.2650],
-        img: "/images/minnesota.jpg",
+        img: "/images/minneapolis.jpg",
         desc: "Land of 10,000 lakes: friendly people, cold winters, and summer at the lake."
     }
 ];
